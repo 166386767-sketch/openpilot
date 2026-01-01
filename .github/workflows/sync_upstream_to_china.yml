@@ -1,0 +1,270 @@
+name: Sync Upstream to China
+
+# ============================================================
+# 自动同步官方 commaai/openpilot 更新到 China 分支
+#
+# 流程：同步官方 → 合并 → 完整性校验 → 通过则发布
+# 校验不通过则中止，不会把坏版本推送给用户设备
+# ============================================================
+
+on:
+  schedule:
+    # 每天 08:00 UTC (北京时间 16:00) 检查官方更新
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+    inputs:
+      skip_validation:
+        description: '跳过校验直接发布（危险，仅紧急时用）'
+        required: false
+        default: 'false'
+        type: choice
+        options: ['false', 'true']
+
+# 需要写权限才能推送
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout China
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+          ref: China
+          lfs: false          # 不下载 LFS 大文件（fork 无 LFS 权限）
+
+      - name: Configure Git
+        run: |
+          git config user.name "China-sync-bot"
+          git config user.email "sync-bot@users.noreply.github.com"
+          # 关键：禁用 LFS smudge，避免因缺少 LFS 大文件导致合并失败
+          git config --global filter.lfs.smudge "git-lfs smudge --skip -- %f"
+          git config --global filter.lfs.process "git-lfs filter-process --skip"
+          git config --global filter.lfs.required false
+          # 移除 LFS 过滤器，确保检出时跳过 LFS 对象
+          git config --global lfs.fetchexclude "*"
+          git lfs install --skip-smudge --local 2>/dev/null || true
+
+      - name: Disable LFS filters (避免大文件下载失败)
+        run: |
+          # 彻底禁用 LFS：让 git 把大文件当普通文件处理
+          git lfs install --skip-smudge --local 2>/dev/null || true
+          git config --local filter.lfs.smudge "git-lfs smudge --skip -- %f"
+          git config --local filter.lfs.process "git-lfs filter-process --skip"
+          git config --local filter.lfs.clean "git-lfs clean -- %f"
+          git config --local filter.lfs.required false
+          git config --local lfs.fetchexclude "*"
+          git config --local lfs.pushurl ""
+          git config --local lfs.url ""
+          # 环境级兜底
+          echo "GIT_LFS_SKIP_SMUDGE=1" >> $GITHUB_ENV
+          echo "GIT_LFS_SKIP_PUSH=1" >> $GITHUB_ENV
+          echo "已彻底禁用 LFS 过滤器"
+
+      - name: Fetch upstream master
+        run: |
+          git remote add upstream https://github.com/commaai/openpilot.git 2>/dev/null || true
+          git fetch upstream master
+
+      - name: Check if already up to date
+        id: check
+        run: |
+          BEHIND=$(git rev-list --count HEAD..upstream/master)
+          echo "behind=$BEHIND" >> $GITHUB_OUTPUT
+          if [ "$BEHIND" -eq 0 ]; then
+            echo "已是最新，无需同步"
+            echo "uptodate=true" >> $GITHUB_OUTPUT
+          else
+            echo "落后 $BEHIND 个提交，开始同步"
+            echo "uptodate=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Merge upstream master
+        id: merge
+        if: steps.check.outputs.behind != '0'
+        run: |
+          set +e
+          # 用 -c 临时禁用 LFS 过滤器，避免大文件下载失败中断合并
+          git -c filter.lfs.smudge= -c filter.lfs.required=false \
+              -c filter.lfs.clean=cat \
+              merge upstream/master --no-edit \
+              -m "chore(sync): auto-merge upstream master ($(date +%Y-%m-%d))"
+          MERGE_RC=$?
+
+          # 关键：自动解决 opendbc_repo 子模块冲突（始终保留我们的 China fork）
+          if [ -f .git/MERGE_HEAD ]; then
+            echo "检测到冲突，尝试自动解决子模块冲突..."
+            # 冲突后 opendbc_repo 指向 FAILED 状态，强制恢复为我们的 fork 提交
+            OUR_OPENDBC=$(git rev-parse HEAD:opendbc_repo 2>/dev/null)
+            if [ -n "$OUR_OPENDBC" ]; then
+              git update-index --cacheinfo 160000,$OUR_OPENDBC,opendbc_repo 2>/dev/null \
+                || git add opendbc_repo 2>/dev/null
+              echo "已保留我方 opendbc 子模块: ${OUR_OPENDBC:0:10}"
+            fi
+
+            # 检查是否还有其他未解决的冲突
+            REMAIN=$(git diff --name-only --diff-filter=U 2>/dev/null | grep -v '^opendbc_repo$' | wc -l)
+            if [ "$REMAIN" -eq 0 ]; then
+              git -c filter.lfs.smudge= -c filter.lfs.required=false \
+                  commit --no-edit -m "chore(sync): auto-merge upstream master ($(date +%Y-%m-%d))" && {
+                echo "merge_status=success" >> $GITHUB_OUTPUT
+                echo "✓ 合并成功（已自动解决子模块冲突）"
+              }
+            else
+              echo "merge_status=conflict" >> $GITHUB_OUTPUT
+              echo "✗ 仍有 $REMAIN 个文件冲突，需人工处理："
+              git diff --name-only --diff-filter=U
+              git merge --abort
+            fi
+          elif [ $MERGE_RC -eq 0 ]; then
+            echo "merge_status=success" >> $GITHUB_OUTPUT
+            echo "✓ 合并成功（无冲突）"
+          else
+            # 合并无实际变化时 git 会返回非 0，但不算错误
+            if git diff --quiet HEAD 2>/dev/null && [ ! -f .git/MERGE_HEAD ]; then
+              echo "merge_status=success" >> $GITHUB_OUTPUT
+              echo "✓ 上游无实际变更，视为已同步"
+            else
+              echo "merge_status=error" >> $GITHUB_OUTPUT
+              echo "✗ 合并失败（非冲突原因）"
+              git merge --abort 2>/dev/null || true
+            fi
+          fi
+          exit 0
+
+      # ========== 完整性校验：确保 Z6 iDD 适配未被破坏 ==========
+      - name: Validate Z6 iDD adaptations
+        id: validate
+        if: steps.merge.outputs.merge_status == 'success'
+        run: |
+          set +e
+
+          # 若本次合并未产生任何实际变更，直接视为通过
+          CHANGED=$(git rev-list --count origin/China..HEAD 2>/dev/null || echo 0)
+          if [ "$CHANGED" -eq 0 ]; then
+            echo "上游无新变更，无需校验"
+            echo "validation=pass" >> $GITHUB_OUTPUT
+            echo "nochange=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          echo "nochange=false" >> $GITHUB_OUTPUT
+
+          FAIL=0
+          echo "=== 开始校验 Z6 iDD 适配完整性 ==="
+
+          # 1. 强制指纹必须存在
+          if grep -q 'FINGERPRINT="CHANGAN_Z6_IDD"' launch_env.sh; then
+            echo "✓ 指纹配置存在"
+          else
+            echo "✗ 指纹配置丢失！"; FAIL=1
+          fi
+
+          # 2. 禁用驾驶员摄像头
+          if grep -q 'DISABLE_DRIVER=1' launch_env.sh; then
+            echo "✓ 驾驶员摄像头禁用配置存在"
+          else
+            echo "✗ 驾驶员摄像头禁用配置丢失！"; FAIL=1
+          fi
+
+          # 3. 核心适配文件必须存在
+          for f in openpilot/selfdrive/car/China_tuning.py \
+                   openpilot/selfdrive/ui/China_theme.py \
+                   openpilot/selfdrive/car/cruise.py \
+                   openpilot/selfdrive/controls/radard.py; do
+            if [ -f "$f" ]; then
+              echo "✓ $f"
+            else
+              echo "✗ 关键文件缺失: $f"; FAIL=1
+            fi
+          done
+
+          # 4. card.py 中的调参钩子必须保留
+          if grep -q "apply_idd_tuning" openpilot/selfdrive/car/card.py; then
+            echo "✓ card.py 调参钩子存在"
+          else
+            echo "✗ card.py 调参钩子丢失！"; FAIL=1
+          fi
+
+          # 5. Python 语法检查（核心文件）
+          python3 -m py_compile openpilot/selfdrive/car/China_tuning.py 2>/dev/null \
+            && echo "✓ China_tuning.py 语法正常" \
+            || { echo "✗ China_tuning.py 语法错误！"; FAIL=1; }
+
+          # 6. 子模块配置必须为绝对 URL
+          if grep -q '\.\./\.\./commaai' .gitmodules 2>/dev/null; then
+            echo "✗ .gitmodules 出现相对路径（设备装不上）！"; FAIL=1
+          else
+            echo "✓ .gitmodules 使用绝对 URL"
+          fi
+
+          if [ "$FAIL" -eq 0 ]; then
+            echo "validation=pass" >> $GITHUB_OUTPUT
+            echo "=== 校验全部通过 ==="
+          else
+            echo "validation=fail" >> $GITHUB_OUTPUT
+            echo "=== 校验失败，将不发布 ==="
+          fi
+
+      - name: Push to China (发布给设备)
+        if: steps.merge.outputs.merge_status == 'success' && (steps.validate.outputs.validation == 'pass' || github.event.inputs.skip_validation == 'true')
+        run: |
+          if [ "${{ steps.validate.outputs.nochange }}" = "true" ]; then
+            echo "上游无新变更，无需推送。China 已是最新。"
+            exit 0
+          fi
+          # 关键：禁用 LFS 上传，避免因 LFS 服务器认证失败导致推送中止
+          git config --local filter.lfs.smudge "git-lfs smudge --skip -- %f"
+          git config --local filter.lfs.process "git-lfs filter-process --skip"
+          git config --local filter.lfs.required false
+          git config --local lfs.fetchexclude "*"
+          git config --local lfs.pushurl ""
+          GIT_LFS_SKIP_PUSH=1 git -c filter.lfs.required=false -c lfs.pushurl= \
+            push origin China 2>&1 | tail -5
+          echo "✓ 已推送到 China，设备将自动更新"
+
+      - name: Auto-revert on validation failure
+        if: steps.merge.outputs.merge_status == 'success' && steps.validate.outputs.validation == 'fail'
+        run: |
+          git reset --hard origin/China
+          echo "已回滚，China 保持不变"
+
+      # 失败通知：优先创建 Issue，仓库未开启 Issues 时自动降级为日志输出，
+      # 绝不能因为通知环节失败而让整个任务变红（否则会掩盖真实结果）。
+      - name: Notify on failure
+        if: failure() || steps.merge.outputs.merge_status == 'conflict' || steps.validate.outputs.validation == 'fail'
+        continue-on-error: true
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const status = '${{ steps.merge.outputs.merge_status }}';
+            const validation = '${{ steps.validate.outputs.validation }}';
+            let title, body;
+            if (status === 'conflict') {
+              title = '⚠️ 官方同步冲突：China 分支需要手动处理';
+              body = '官方 commaai/openpilot:master 与 China 分支发生合并冲突，本次同步已中止，China 未被修改。\n\n需要人工解决冲突后再同步。';
+            } else if (validation === 'fail') {
+              title = '⚠️ 同步后校验失败：Z6 iDD 适配可能被破坏';
+              body = '官方更新已合并，但完整性校验未通过，为保护用户设备，本次**未发布**。\n\n请检查校验日志，确认 Z6 iDD 适配代码是否被官方改动影响。';
+            } else {
+              title = '⚠️ 同步工作流执行失败';
+              body = '自动同步流程出现异常，请查看 Actions 运行日志。';
+            }
+
+            try {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                labels: ['upstream-sync']
+              });
+              console.log('已创建提醒 Issue');
+            } catch (e) {
+              // 仓库未启用 Issues（HTTP 410）或无权限时走这里，仅打印日志
+              core.warning(`无法创建 Issue（${e.status || 'unknown'}）：${title}`);
+              core.warning(body);
+            }
