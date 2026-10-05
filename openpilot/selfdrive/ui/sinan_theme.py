@@ -116,6 +116,7 @@ def draw_breathing_border(rect: rl.Rectangle, color: rl.Color, period_ms: float 
   period_ms: full breathe cycle duration in milliseconds
   phase: 0.0~1.0 position in cycle
   """
+  import math
   import time
   t = (time.monotonic() * 1000.0 + phase * period_ms) % period_ms
   # Sine wave 0~1
