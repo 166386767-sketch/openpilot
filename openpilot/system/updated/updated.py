@@ -345,6 +345,15 @@ class Updater:
 
     excluded_branches = ('release2', 'release2-staging')
 
+    # Ensure remote origin points to SiNan-Z6/openpilot (renamed from 166386767-sketch)
+    try:
+      current_remote = run(["git", "remote", "get-url", "origin"], OVERLAY_MERGED).strip()
+      if "166386767-sketch" in current_remote:
+        run(["git", "remote", "set-url", "origin", "https://github.com/SiNan-Z6/openpilot.git"], OVERLAY_MERGED)
+        cloudlog.info("Updated remote origin to SiNan-Z6/openpilot")
+    except subprocess.CalledProcessError:
+      pass
+
     try:
       run(["git", "ls-remote", "origin", "HEAD"], OVERLAY_MERGED)
       self._has_internet = True
