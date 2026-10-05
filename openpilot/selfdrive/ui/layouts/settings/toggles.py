@@ -135,6 +135,28 @@ class TogglesLayout(Widget):
       if param == "DisengageOnAccelerator":
         self._toggles["LongitudinalPersonality"] = self._long_personality_setting
 
+    # === SINAN: Z6 iDD dedicated tuning items ===
+    self._idd_launch_setting = multiple_button_item(
+      lambda: tr("起步加速强度 (Z6 iDD)"),
+      lambda: tr("Z6 iDD 起步加速补偿强度：轻 0.20 / 标准 0.35 / 运动 0.50。熄火重启后生效。"),
+      buttons=[lambda: tr("轻"), lambda: tr("标准"), lambda: tr("运动")],
+      button_width=150,
+      selected_index=self._get_idd_launch_index(),
+      callback=self._set_idd_launch_boost,
+      icon="speed_limit.png",
+    )
+    self._idd_eps_setting = multiple_button_item(
+      lambda: tr("大角度转向补偿 (Z6 iDD)"),
+      lambda: tr("Z6 iDD 大角度弯道转向补偿（EPS 横向加速度预算）：标准 4.6 / 增强 5.2 / 最大 5.8。熄火重启后生效。"),
+      buttons=[lambda: tr("标准"), lambda: tr("增强"), lambda: tr("最大")],
+      button_width=150,
+      selected_index=self._get_idd_eps_index(),
+      callback=self._set_idd_eps_budget,
+      icon="chffr_wheel.png",
+    )
+    self._toggles["IDDLaunchBoostLevel"] = self._idd_launch_setting
+    self._toggles["IDDEpsBudget"] = self._idd_eps_setting
+
     self._update_experimental_mode_icon()
     self._scroller = Scroller(list(self._toggles.values()), line_separator=True, spacing=0)
 
@@ -240,6 +262,32 @@ class TogglesLayout(Widget):
     self._params.put_bool(param, state, block=True)
     if self._toggle_defs[param][3]:
       self._params.put_bool("OnroadCycleRequested", True, block=True)
+
+  def _get_idd_launch_index(self) -> int:
+    try:
+      v = self._params.get("IDDLaunchBoostLevel")
+      if v is not None and v in ("0", "1", "2"):
+        return int(v)
+    except Exception:
+      pass
+    return 1  # 标准
+
+  def _set_idd_launch_boost(self, index: int):
+    self._params.put("IDDLaunchBoostLevel", str(index), block=True)
+
+  def _get_idd_eps_index(self) -> int:
+    try:
+      v = float(self._params.get("IDDEpsBudget") or 4.6)
+    except Exception:
+      v = 4.6
+    if v <= 4.6:
+      return 0  # 标准
+    if v >= 5.4:
+      return 2  # 最大
+    return 1    # 增强
+
+  def _set_idd_eps_budget(self, index: int):
+    self._params.put("IDDEpsBudget", str([4.6, 5.2, 5.8][index]), block=True)
 
   def _set_longitudinal_personality(self, button_index: int):
     self._params.put("LongitudinalPersonality", button_index, block=True)
