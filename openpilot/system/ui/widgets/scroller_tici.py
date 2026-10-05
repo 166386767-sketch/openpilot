@@ -4,7 +4,7 @@ from openpilot.system.ui.lib.scroll_panel import GuiScrollPanel
 from openpilot.system.ui.widgets import Widget
 
 ITEM_SPACING = 40
-LINE_COLOR = rl.GRAY
+LINE_COLOR = rl.Color(0x1F, 0x27, 0x30, 0xFF)  # #1F2730 SINAN dark divider
 LINE_PADDING = 40
 
 
