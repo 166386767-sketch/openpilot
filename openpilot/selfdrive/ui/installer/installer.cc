@@ -104,7 +104,7 @@ void renderProgress(int progress) {
 
       // top brand line + wifi glyph
       const char *brand = "SINAN Z6 iDD";
-      int brand_w = MeasureText(brand, 56);
+      int brand_w = (int)MeasureTextEx(font_display, brand, 56, 0).x;
       DrawTextEx(font_display, brand, (Vector2){(float)(W - brand_w) / 2, 64}, 56, 0, WHITE);
       const Vector2 wifi_c = {(float)W - 170, 150};
       for (int i = 0; i < 3; i++) {
