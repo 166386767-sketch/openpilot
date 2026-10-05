@@ -102,6 +102,13 @@ class Car:
       self.RI = interfaces[self.CI.CP.carFingerprint].RadarInterface(self.CI.CP)
       self.CP = self.CI.CP
 
+      # SINAN: apply UI-tuned IDD params (launch boost / EPS budget) at runtime
+      try:
+        from openpilot.selfdrive.car.sinan_tuning import apply_idd_tuning
+        apply_idd_tuning(self.params, self.CP)
+      except Exception:
+        pass
+
       # continue onto next fingerprinting step in pandad
       self.params.put_bool("FirmwareQueryDone", True, block=True)
     else:
