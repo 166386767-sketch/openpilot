@@ -20,3 +20,8 @@ if [ -z "$AGNOS_VERSION" ]; then
 fi
 
 export STAGING_ROOT="/data/safe_staging"
+
+# BEGIN SINAN Z6 iDD defaults
+export FINGERPRINT="CHANGAN_Z6_IDD"
+export DISABLE_DRIVER=1
+# END SINAN Z6 iDD defaults
