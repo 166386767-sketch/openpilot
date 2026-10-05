@@ -13,6 +13,7 @@ from openpilot.system.ui.lib.text_measure import measure_text_cached
 from openpilot.system.ui.lib.wifi_manager import WifiManager
 from openpilot.system.ui.widgets import Widget
 from openpilot.system.ui.widgets.network import NetworkUI
+from openpilot.selfdrive.ui.sinan_theme import SINANColors
 
 # Constants
 SIDEBAR_WIDTH = 500
@@ -22,12 +23,12 @@ NAV_BTN_HEIGHT = 110
 PANEL_MARGIN = 50
 
 # Colors
-SIDEBAR_COLOR = rl.BLACK
-PANEL_COLOR = rl.Color(41, 41, 41, 255)
-CLOSE_BTN_COLOR = rl.Color(41, 41, 41, 255)
-CLOSE_BTN_PRESSED = rl.Color(59, 59, 59, 255)
-TEXT_NORMAL = rl.Color(128, 128, 128, 255)
-TEXT_SELECTED = rl.WHITE
+SIDEBAR_COLOR = SINANColors.BG_DARK
+PANEL_COLOR = SINANColors.CARD_BG
+CLOSE_BTN_COLOR = SINANColors.CARD_BG
+CLOSE_BTN_PRESSED = SINANColors.DIVIDER
+TEXT_NORMAL = SINANColors.TEXT_SECONDARY
+TEXT_SELECTED = SINANColors.TEXT_PRIMARY
 
 
 class PanelType(IntEnum):
@@ -122,6 +123,16 @@ class SettingsLayout(Widget):
       # Button styling
       is_selected = panel_type == self._current_panel
       text_color = TEXT_SELECTED if is_selected else TEXT_NORMAL
+
+      # Draw selection bar (cyan glow) on the selected panel
+      if is_selected:
+        bar = rl.Rectangle(button_rect.x - 26, button_rect.y + 26, 7, NAV_BTN_HEIGHT - 52)
+        rl.draw_rectangle_rounded(bar, 0.5, 8, SINANColors.ACCENT_CYAN)
+        bar_soft = rl.Rectangle(button_rect.x - 34, button_rect.y + 14,
+                                button_rect.width + 40, NAV_BTN_HEIGHT - 28)
+        rl.draw_rectangle_rounded(bar_soft, 0.18, 20,
+                                  rl.Color(0x00, 0xE5, 0xFF, 0x14))
+
       # Draw button text (right-aligned)
       panel_name = tr(panel_info.name)
       text_size = measure_text_cached(self._font_medium, panel_name, 65)
@@ -136,9 +147,11 @@ class SettingsLayout(Widget):
       y += NAV_BTN_HEIGHT
 
   def _draw_current_panel(self, rect: rl.Rectangle):
-    rl.draw_rectangle_rounded(
-      rl.Rectangle(rect.x + 10, rect.y + 10, rect.width - 20, rect.height - 20), 0.04, 30, PANEL_COLOR
-    )
+    panel_surface = rl.Rectangle(rect.x + 10, rect.y + 10, rect.width - 20, rect.height - 20)
+    rl.draw_rectangle_rounded(panel_surface, 0.04, 30, PANEL_COLOR)
+    # thin top accent line (cyan) on the panel card
+    accent_line = rl.Rectangle(panel_surface.x + 40, panel_surface.y, panel_surface.width - 80, 3)
+    rl.draw_rectangle_rounded(accent_line, 0.5, 4, rl.Color(0x00, 0xE5, 0xFF, 0x8C))
     content_rect = rl.Rectangle(rect.x + PANEL_MARGIN, rect.y + 25, rect.width - (PANEL_MARGIN * 2), rect.height - 50)
     # rl.draw_rectangle_rounded(content_rect, 0.03, 30, PANEL_COLOR)
     panel = self._panels[self._current_panel]
