@@ -96,15 +96,73 @@ void finishInstall() {
 
 void renderProgress(int progress) {
   BeginDrawing();
-    ClearBackground(BLACK);
+    ClearBackground((Color){0x0A, 0x0E, 0x12, 255});
     if (tici_device) {
-      DrawTextEx(font_inter, "Installing...", (Vector2){150, 290}, 110, 0, WHITE);
-      Rectangle bar = {150, 570, (float)GetScreenWidth() - 300, 72};
-      DrawRectangleRec(bar, (Color){41, 41, 41, 255});
+      const int W = GetScreenWidth();
+      const int H = GetScreenHeight();
       progress = std::clamp(progress, 0, 100);
-      bar.width *= progress / 100.0f;
-      DrawRectangleRec(bar, (Color){70, 91, 234, 255});
-      DrawTextEx(font_inter, (std::to_string(progress) + "%").c_str(), (Vector2){150, 670}, 85, 0, WHITE);
+
+      // top brand line + wifi glyph
+      const char *brand = "SINAN Z6 iDD";
+      int brand_w = MeasureText(brand, 56);
+      DrawTextEx(font_display, brand, (Vector2){(float)(W - brand_w) / 2, 64}, 56, 0, WHITE);
+      const Vector2 wifi_c = {(float)W - 170, 150};
+      for (int i = 0; i < 3; i++) {
+        float r = 24.0f + i * 18.0f;
+        DrawCircleSectorLines(wifi_c, r, -62.0f, 62.0f, 8, (Color){0x8A, 0x96, 0xA3, 255});
+      }
+      DrawCircle((int)wifi_c.x, (int)wifi_c.y + 56, 5.0f, (Color){0x8A, 0x96, 0xA3, 255});
+
+      // center glowing progress ring
+      Vector2 ring_c = {(float)W / 2, (float)H * 0.42f};
+      float ring_r = 165.0f;
+      // soft outer halo (static)
+      DrawCircleLines((int)ring_c.x, (int)ring_c.y, ring_r + 20.0f, (Color){0x00, 0xE5, 0xFF, 0x2E});
+      DrawCircleLines((int)ring_c.x, (int)ring_c.y, ring_r + 10.0f, (Color){0x00, 0xE5, 0xFF, 0x4E});
+      // progress arc
+      float frac = progress / 100.0f;
+      if (frac >= 0.999f) {
+        DrawCircleLines((int)ring_c.x, (int)ring_c.y, ring_r, (Color){0x00, 0xE5, 0xFF, 250});
+      } else {
+        DrawCircleSectorLines(ring_c, ring_r, 0.0f, frac * 360.0f, 120, (Color){0x00, 0xE5, 0xFF, 250});
+      }
+      // inner faint ring
+      DrawCircleLines((int)ring_c.x, (int)ring_c.y, ring_r - 12.0f, (Color){0x00, 0xE5, 0xFF, 0x2E});
+
+      // percent inside ring
+      std::string pct = std::to_string(progress) + "%";
+      Vector2 pct_sz = MeasureTextEx(font_display, pct.c_str(), 120, 0);
+      DrawTextEx(font_display, pct.c_str(),
+                 (Vector2){ring_c.x - pct_sz.x / 2, ring_c.y - pct_sz.y / 2}, 120, 0, WHITE);
+
+      // stage log (download / verify / write), current stage highlighted
+      const char *stage1 = "1. Downloading dependencies...";
+      const char *stage2 = "2. Verifying packages...";
+      const char *stage3 = "3. Writing files...";
+      int stage = progress < 91 ? 1 : (progress < 93 ? 2 : 3);
+      float log_x = (float)W / 2 - 320;
+      float log_y = ring_c.y + ring_r + 70;
+      for (int i = 1; i <= 3; i++) {
+        const char *txt = i == 1 ? stage1 : (i == 2 ? stage2 : stage3);
+        Vector2 sz = MeasureTextEx(font_inter, txt, 44, 0);
+        (void)sz;
+        bool active = (i == stage);
+        Color col = active ? (Color){0x00, 0xE5, 0xFF, 255} : (Color){0x8A, 0x96, 0xA3, 160};
+        DrawTextEx(font_inter, txt, (Vector2){log_x, log_y + (i - 1) * 62.0f}, 44, 0, col);
+      }
+
+      // bottom progress bar
+      Rectangle bar = {(float)W / 2 - 420, log_y + 220, 840, 10};
+      DrawRectangleRec(bar, (Color){31, 39, 48, 255});
+      bar.width *= frac;
+      DrawRectangleRec(bar, (Color){0x00, 0xE5, 0xFF, 220});
+
+      // bottom hint
+      const char *hint = "Do not disconnect power";
+      Vector2 hint_sz = MeasureTextEx(font_inter, hint, 36, 0);
+      DrawTextEx(font_inter, hint,
+                 (Vector2){(float)(W - hint_sz.x) / 2, (float)H - 110}, 36, 0,
+                 (Color){0x8A, 0x96, 0xA3, 255});
     } else {
       DrawTextEx(font_display, "installing...", (Vector2){12, 0}, 77, 0, (Color){255, 255, 255, (unsigned char)(255 * 0.9)});
       const std::string percent_str = std::to_string(progress) + "%";
