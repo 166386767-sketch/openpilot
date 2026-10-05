@@ -35,12 +35,12 @@ class FontSizes:
 
 @dataclass(frozen=True)
 class Colors:
-  WHITE = rl.WHITE
-  DISENGAGED = rl.Color(145, 155, 149, 255)
-  OVERRIDE = rl.Color(145, 155, 149, 255)  # Added
-  ENGAGED = rl.Color(128, 216, 166, 255)
-  DISENGAGED_BG = rl.Color(0, 0, 0, 153)
-  OVERRIDE_BG = rl.Color(145, 155, 149, 204)
+  WHITE = rl.Color(0xFF, 0xFF, 0xFF, 0xFF)  # SINAN: pure white
+  DISENGAGED = rl.Color(0x3A, 0x45, 0x50, 0xFF)  # SINAN: gray
+  OVERRIDE = rl.Color(0x8A, 0x96, 0xA3, 0xFF)    # SINAN: muted gray
+  ENGAGED = rl.Color(0x00, 0xE5, 0xFF, 0xFF)     # SINAN: cyan glow
+  DISENGAGED_BG = rl.Color(0x0A, 0x0E, 0x12, 0x99)  # SINAN: dark bg 60%
+  OVERRIDE_BG = rl.Color(0x14, 0x1A, 0x21, 0xCC)   # SINAN: card bg 80%
   ENGAGED_BG = rl.Color(128, 216, 166, 204)
   GREY = rl.Color(166, 166, 166, 255)
   DARK_GREY = rl.Color(114, 114, 114, 255)
