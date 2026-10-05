@@ -17,15 +17,15 @@ MIN_DRAW_DISTANCE = 10.0
 MAX_DRAW_DISTANCE = 100.0
 
 THROTTLE_COLORS = [
-  rl.Color(13, 248, 122, 102),   # HSLF(148/360, 0.94, 0.51, 0.4)
-  rl.Color(114, 255, 92, 89),    # HSLF(112/360, 1.0, 0.68, 0.35)
-  rl.Color(114, 255, 92, 0),     # HSLF(112/360, 1.0, 0.68, 0.0)
+  rl.Color(0x00, 0xE5, 0xFF, 0x66),   # SINAN: cyan glow 40%
+  rl.Color(0x00, 0xE5, 0xFF, 0x59),   # SINAN: cyan glow 35%
+  rl.Color(0x00, 0xE5, 0xFF, 0x00),   # SINAN: cyan fade out
 ]
 
 NO_THROTTLE_COLORS = [
-  rl.Color(242, 242, 242, 102), # HSLF(148/360, 0.0, 0.95, 0.4)
-  rl.Color(242, 242, 242, 89),  # HSLF(112/360, 0.0, 0.95, 0.35)
-  rl.Color(242, 242, 242, 0),   # HSLF(112/360, 0.0, 0.95, 0.0)
+  rl.Color(0x8A, 0x96, 0xA3, 0x66),  # SINAN: muted gray 40%
+  rl.Color(0x8A, 0x96, 0xA3, 0x59),  # SINAN: muted gray 35%
+  rl.Color(0x8A, 0x96, 0xA3, 0x00),  # SINAN: muted fade out
 ]
 
 
