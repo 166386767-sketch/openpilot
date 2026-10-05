@@ -12,6 +12,10 @@ from openpilot.system.ui.widgets.button import Button, ButtonStyle
 from openpilot.system.ui.widgets.label import Label
 from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.common.version import terms_version, training_version
+from openpilot.selfdrive.ui.sinan_theme import SINANColors
+from openpilot.system.ui.lib.text_measure import measure_text_cached
+import math
+import time
 
 DEBUG = False
 
@@ -30,9 +34,10 @@ RESTART_TRAINING_RECT = rl.Rectangle(87, 795, 472, 186)
 
 
 class OnboardingState(IntEnum):
-  TERMS = 0
-  ONBOARDING = 1
-  DECLINE = 2
+  WELCOME = 0
+  TERMS = 1
+  ONBOARDING = 2
+  DECLINE = 3
 
 
 class TrainingGuide(Widget):
@@ -106,6 +111,109 @@ class TrainingGuide(Widget):
     return -1
 
 
+
+class WelcomePage(Widget):
+  """SINAN dark-tech welcome shown once on first boot before the terms page."""
+
+  def __init__(self, on_continue=None):
+    super().__init__()
+    self._on_continue = on_continue
+    self._params = ui_state.params
+
+  def _handle_mouse_release(self, mouse_pos):
+    if self._on_continue:
+      self._on_continue()
+
+  @staticmethod
+  def _get_device_summary() -> str:
+    cp = ui_state.CP
+    if cp is not None:
+      name = str(getattr(cp, "carName", "") or "")
+      fprint = str(getattr(cp, "carFingerprint", "") or "")
+      if "Z6" in name or "Z6" in fprint:
+        return "欧尚 Z6 iDD 已就绪"
+      if name:
+        return f"{name} 已就绪"
+    return "设备已就绪"
+
+  def _render(self, rect: rl.Rectangle):
+    cx = rect.x + rect.width / 2
+    cy = rect.y + rect.height * 0.40
+    pulse = (math.sin(time.monotonic() * 2.0) + 1.0) / 2.0  # 0~1 breathing
+
+    # background
+    rl.draw_rectangle_rec(rect, SINANColors.BG_DARK)
+
+    # central glowing emblem: ring layers + road perspective + car silhouette
+    ring_r = int(rect.width * 0.092)
+    for i in range(4, 0, -1):
+      alpha = int(0x1A + (4 - i) * 0x22 + pulse * 12)
+      rl.draw_circle_lines(int(cx), int(cy), ring_r + (4 - i) * 16,
+                           rl.Color(0x00, 0xE5, 0xFF, min(alpha, 255)))
+
+    # road perspective lines inside emblem
+    base_y = cy + ring_r * 0.62
+    horizon = cy - ring_r * 0.30
+    for spread in (0.92, 0.64, 0.36):
+      rl.draw_line(int(cx - ring_r * spread), int(base_y), int(cx), int(horizon),
+                   rl.Color(0x00, 0xE5, 0xFF, 0x5E))
+      rl.draw_line(int(cx + ring_r * spread), int(base_y), int(cx), int(horizon),
+                   rl.Color(0x00, 0xE5, 0xFF, 0x5E))
+    rl.draw_line(int(cx), int(horizon), int(cx), int(base_y), rl.Color(0x00, 0xE5, 0xFF, 0x8C))
+
+    # car silhouette (white body + cyan wheels)
+    car_w, car_h = ring_r * 0.78, ring_r * 0.26
+    car_y = base_y - car_h
+    rl.draw_rectangle_rounded(rl.Rectangle(cx - car_w / 2, car_y, car_w, car_h),
+                              0.35, 8, rl.Color(0xFF, 0xFF, 0xFF, 0xE6))
+    rl.draw_circle(int(cx - car_w * 0.28), int(car_y + car_h + ring_r * 0.09), int(ring_r * 0.09),
+                   rl.Color(0x00, 0xE5, 0xFF, 0xCC))
+    rl.draw_circle(int(cx + car_w * 0.28), int(car_y + car_h + ring_r * 0.09), int(ring_r * 0.09),
+                   rl.Color(0x00, 0xE5, 0xFF, 0xCC))
+
+    # welcome title
+    font_bold = gui_app.font(FontWeight.BOLD)
+    title = tr("欢迎使用")
+    title_size = 96
+    tw = measure_text_cached(font_bold, title, title_size)
+    rl.draw_text_ex(font_bold, title, rl.Vector2(cx - tw.x / 2, cy + ring_r + 70),
+                    title_size, 0, SINANColors.TEXT_PRIMARY)
+
+    # vehicle line (accent cyan)
+    sub_font = gui_app.font(FontWeight.MEDIUM)
+    sub = self._get_device_summary()
+    sub_size = 44
+    sw = measure_text_cached(sub_font, sub, sub_size)
+    rl.draw_text_ex(sub_font, sub, rl.Vector2(cx - sw.x / 2, cy + ring_r + 190),
+                    sub_size, 0, SINANColors.ACCENT_CYAN)
+
+    # hint
+    font = gui_app.font(FontWeight.NORMAL)
+    hint = tr("长按方向盘按键开始驾驶辅助")
+    hint_size = 32
+    hw = measure_text_cached(font, hint, hint_size)
+    rl.draw_text_ex(font, hint, rl.Vector2(cx - hw.x / 2, cy + ring_r + 270),
+                    hint_size, 0, SINANColors.TEXT_SECONDARY)
+
+    # bottom breathing light line
+    line_w = rect.width * 0.64
+    line_y = rect.y + rect.height - 180
+    glow_alpha = int(0x40 + pulse * 0xBF)
+    rl.draw_rectangle_rounded(rl.Rectangle(cx - line_w / 2, line_y, line_w, 4),
+                              0.5, 4, rl.Color(0x00, 0xE5, 0xFF, glow_alpha))
+
+    # corner info: version (left) + date (right)
+    version = self._params.get("UpdaterCurrentDescription") or "SINAN"
+    rl.draw_text_ex(font, "SINAN " + str(version),
+                    rl.Vector2(rect.x + 60, rect.y + rect.height - 84), 26, 0,
+                    SINANColors.TEXT_SECONDARY)
+    date_str = time.strftime("%Y-%m-%d")
+    dsize = measure_text_cached(font, date_str, 26)
+    rl.draw_text_ex(font, date_str,
+                    rl.Vector2(rect.x + rect.width - dsize.x - 60, rect.y + rect.height - 84),
+                    26, 0, SINANColors.TEXT_SECONDARY)
+
+
 class TermsPage(Widget):
   def __init__(self, on_accept=None, on_decline=None):
     super().__init__()
@@ -176,9 +284,10 @@ class OnboardingWindow(Widget):
     self._accepted_terms: bool = ui_state.params.get("HasAcceptedTerms") == terms_version
     self._training_done: bool = ui_state.params.get("CompletedTrainingVersion") == training_version
 
-    self._state = OnboardingState.TERMS if not self._accepted_terms else OnboardingState.ONBOARDING
+    self._state = OnboardingState.WELCOME if not self._accepted_terms else OnboardingState.ONBOARDING
 
     # Windows
+    self._welcome = WelcomePage(on_continue=self._on_welcome_continue)
     self._terms = TermsPage(on_accept=self._on_terms_accepted, on_decline=self._on_terms_declined)
     self._training_guide: TrainingGuide | None = None
     self._decline_page = DeclinePage(back_callback=self._on_decline_back)
@@ -186,6 +295,9 @@ class OnboardingWindow(Widget):
   @property
   def completed(self) -> bool:
     return self._accepted_terms and self._training_done
+
+  def _on_welcome_continue(self):
+    self._state = OnboardingState.TERMS
 
   def _on_terms_declined(self):
     self._state = OnboardingState.DECLINE
@@ -206,6 +318,8 @@ class OnboardingWindow(Widget):
     if self._training_guide is None:
       self._training_guide = TrainingGuide(completed_callback=self._on_completed_training)
 
+    if self._state == OnboardingState.WELCOME:
+      self._welcome.render(self._rect)
     if self._state == OnboardingState.TERMS:
       self._terms.render(self._rect)
     if self._state == OnboardingState.ONBOARDING:
