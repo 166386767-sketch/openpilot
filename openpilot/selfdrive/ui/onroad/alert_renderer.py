@@ -1,4 +1,5 @@
 import time
+import math
 import pyray as rl
 from dataclasses import dataclass
 from openpilot.cereal import messaging, log
@@ -9,6 +10,8 @@ from openpilot.system.ui.lib.multilang import tr
 from openpilot.system.ui.lib.text_measure import measure_text_cached
 from openpilot.system.ui.widgets import Widget
 from openpilot.system.ui.widgets.label import Label
+# SINAN Dark Tech Theme
+from openpilot.selfdrive.ui.sinan_theme import SINANColors, draw_glow_rect, draw_breathing_border
 
 AlertSize = log.SelfdriveState.AlertSize
 AlertStatus = log.SelfdriveState.AlertStatus
@@ -32,9 +35,9 @@ SELFDRIVE_UNRESPONSIVE_TIMEOUT = 10  # Seconds
 
 # Constants
 ALERT_COLORS = {
-  AlertStatus.normal: rl.Color(0x15, 0x15, 0x15, 0xF1),      # #151515 with alpha 0xF1
-  AlertStatus.userPrompt: rl.Color(0xDA, 0x6F, 0x25, 0xF1),  # #DA6F25 with alpha 0xF1
-  AlertStatus.critical: rl.Color(0xC9, 0x22, 0x31, 0xF1),    # #C92231 with alpha 0xF1
+  AlertStatus.normal: SINANColors.CARD_BG,                     # SINAN: semi-transparent dark card
+  AlertStatus.userPrompt: rl.Color(0x14, 0x1A, 0x21, 0xE6),  # SINAN: dark card base for takeover
+  AlertStatus.critical: rl.Color(0x14, 0x1A, 0x21, 0xE6),    # SINAN: dark card base for critical
 }
 
 
@@ -143,18 +146,42 @@ class AlertRenderer(Widget):
 
     if alert.size != AlertSize.full:
       roundness = ALERT_BORDER_RADIUS / (min(rect.width, rect.height) / 2)
+      # SINAN: add glow effect for userPrompt and critical alerts
+      if alert.status == AlertStatus.userPrompt:
+        draw_glow_rect(rect, SINANColors.ALERT_TAKEOVER, glow_alpha=0x40, blur_radius=20.0)
+        # SINAN: breathing amber border around the whole screen
+        screen_rect = rl.Rectangle(0, 0, rl.get_screen_width(), rl.get_screen_height())
+        draw_breathing_border(screen_rect, SINANColors.ALERT_TAKEOVER, period_ms=1200.0)
+      elif alert.status == AlertStatus.critical:
+        draw_glow_rect(rect, SINANColors.ALERT_CRITICAL, glow_alpha=0x40, blur_radius=20.0)
+        screen_rect = rl.Rectangle(0, 0, rl.get_screen_width(), rl.get_screen_height())
+        draw_breathing_border(screen_rect, SINANColors.ALERT_CRITICAL, period_ms=800.0)
       rl.draw_rectangle_rounded(rect, roundness, 10, color)
     else:
       rl.draw_rectangle_rec(rect, color)
+      # SINAN: full-screen alerts also get breathing border
+      if alert.status == AlertStatus.userPrompt:
+        screen_rect = rl.Rectangle(0, 0, rl.get_screen_width(), rl.get_screen_height())
+        draw_breathing_border(screen_rect, SINANColors.ALERT_TAKEOVER, period_ms=1200.0)
+      elif alert.status == AlertStatus.critical:
+        screen_rect = rl.Rectangle(0, 0, rl.get_screen_width(), rl.get_screen_height())
+        draw_breathing_border(screen_rect, SINANColors.ALERT_CRITICAL, period_ms=800.0)
 
   def _draw_text(self, rect: rl.Rectangle, alert: Alert) -> None:
+    # SINAN: determine text color based on alert status
+    text_color = rl.WHITE
+    if alert.status == AlertStatus.userPrompt:
+      text_color = SINANColors.ALERT_TAKEOVER  # SINAN: amber for takeover
+    elif alert.status == AlertStatus.critical:
+      text_color = SINANColors.ALERT_CRITICAL    # SINAN: red for critical
+
     if alert.size == AlertSize.small:
-      self._draw_centered(alert.text1, rect, self.font_bold, ALERT_FONT_MEDIUM)
+      self._draw_centered(alert.text1, rect, self.font_bold, ALERT_FONT_MEDIUM, color=text_color)
 
     elif alert.size == AlertSize.mid:
-      self._draw_centered(alert.text1, rect, self.font_bold, ALERT_FONT_BIG, center_y=False)
+      self._draw_centered(alert.text1, rect, self.font_bold, ALERT_FONT_BIG, center_y=False, color=text_color)
       rect.y += ALERT_FONT_BIG + ALERT_LINE_SPACING
-      self._draw_centered(alert.text2, rect, self.font_regular, ALERT_FONT_SMALL, center_y=False)
+      self._draw_centered(alert.text2, rect, self.font_regular, ALERT_FONT_SMALL, center_y=False, color=SINANColors.TEXT_SECONDARY)
 
     else:
       is_long = len(alert.text1) > 15
@@ -164,11 +191,16 @@ class AlertRenderer(Widget):
       title_rect = rl.Rectangle(rect.x, rect.y + top_offset, rect.width, 600)
       self._full_text1_label.set_font_size(font_size1)
       self._full_text1_label.set_text(alert.text1)
+      # SINAN: set label color for takeover/critical
+      if hasattr(self._full_text1_label, 'set_text_color'):
+        self._full_text1_label.set_text_color(text_color)
       self._full_text1_label.render(title_rect)
 
       bottom_offset = 361 if is_long else 420
       subtitle_rect = rl.Rectangle(rect.x, rect.y + rect.height - bottom_offset, rect.width, 300)
       self._full_text2_label.set_text(alert.text2)
+      if hasattr(self._full_text2_label, 'set_text_color'):
+        self._full_text2_label.set_text_color(SINANColors.TEXT_SECONDARY)
       self._full_text2_label.render(subtitle_rect)
 
   def _draw_centered(self, text, rect, font, font_size, center_y=True, color=rl.WHITE) -> None:
