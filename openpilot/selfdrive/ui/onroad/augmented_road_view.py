@@ -1,5 +1,7 @@
 import numpy as np
 import pyray as rl
+# SINAN Dark Tech Theme
+from openpilot.selfdrive.ui.sinan_theme import SINANColors, SINANFonts, SINANLayout
 from openpilot.cereal import log
 from openpilot.cereal.visionipc import VisionStreamType
 from openpilot.selfdrive.ui import UI_BORDER_SIZE
@@ -20,9 +22,9 @@ WIDE_CAM = VisionStreamType.VISION_STREAM_WIDE_ROAD
 DEFAULT_DEVICE_CAMERA = DEVICE_CAMERAS["tici", "ar0231"]
 
 BORDER_COLORS = {
-  UIStatus.DISENGAGED: rl.Color(0x12, 0x28, 0x39, 0xFF),  # Blue for disengaged state
-  UIStatus.OVERRIDE: rl.Color(0x89, 0x92, 0x8D, 0xFF),  # Gray for override state
-  UIStatus.ENGAGED: rl.Color(0x16, 0x7F, 0x40, 0xFF),  # Green for engaged state
+  UIStatus.DISENGAGED: rl.Color(0x3A, 0x45, 0x50, 0xFF),  # SINAN: gray for disengaged
+  UIStatus.OVERRIDE: rl.Color(0x8A, 0x96, 0xA3, 0xFF),   # SINAN: muted gray for override
+  UIStatus.ENGAGED: rl.Color(0x7C, 0xFF, 0xB2, 0xFF),      # SINAN: cyan-green glow for engaged
 }
 
 WIDE_CAM_MAX_SPEED = 10.0  # m/s (22 mph)
