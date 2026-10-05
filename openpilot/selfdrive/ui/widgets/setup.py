@@ -15,7 +15,9 @@ class SetupWidget(Widget):
   def __init__(self):
     super().__init__()
     self._open_settings_callback = None
+    self._skipped = False
     self._pair_device_btn = Button(lambda: tr("Pair device"), self._show_pairing, button_style=ButtonStyle.PRIMARY)
+    self._skip_btn = Button(lambda: tr("Skip for now"), lambda: setattr(self, '_skipped', True), button_style=ButtonStyle.SECONDARY)
     self._open_settings_btn = Button(lambda: tr("Open"), lambda: self._open_settings_callback() if self._open_settings_callback else None,
                                      button_style=ButtonStyle.PRIMARY)
     self._firehose_label = Label(lambda: tr("Firehose Mode"), font_weight=FontWeight.MEDIUM, font_size=64)
@@ -25,7 +27,9 @@ class SetupWidget(Widget):
     self._open_settings_callback = callback
 
   def _render(self, rect: rl.Rectangle):
-    if not ui_state.prime_state.is_paired():
+    if self._skipped or not ui_state.prime_state.is_paired():
+      if self._skipped:
+        return
       self._render_registration(rect)
     else:
       self._render_firehose_prompt(rect)
@@ -54,6 +58,9 @@ class SetupWidget(Widget):
 
     button_rect = rl.Rectangle(x, y + 30, w, 200)
     self._pair_device_btn.render(button_rect)
+
+    skip_rect = rl.Rectangle(x, y + 30 + 200 + 24, w, 120)
+    self._skip_btn.render(skip_rect)
 
   def _render_firehose_prompt(self, rect: rl.Rectangle):
     """Render firehose prompt widget."""
