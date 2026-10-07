@@ -51,10 +51,19 @@ jobs:
 
       - name: Disable LFS filters (避免大文件下载失败)
         run: |
-          # 删除 LFS 过滤规则，让 git 把大文件当普通文件处理
-          git config --local --remove-section filter.lfs 2>/dev/null || true
+          # 彻底禁用 LFS：让 git 把大文件当普通文件处理
+          git lfs install --skip-smudge --local 2>/dev/null || true
+          git config --local filter.lfs.smudge "git-lfs smudge --skip -- %f"
+          git config --local filter.lfs.process "git-lfs filter-process --skip"
+          git config --local filter.lfs.clean "git-lfs clean -- %f"
+          git config --local filter.lfs.required false
           git config --local lfs.fetchexclude "*"
-          echo "已禁用 LFS 过滤器"
+          git config --local lfs.pushurl ""
+          git config --local lfs.url ""
+          # 环境级兜底
+          echo "GIT_LFS_SKIP_SMUDGE=1" >> $GITHUB_ENV
+          echo "GIT_LFS_SKIP_PUSH=1" >> $GITHUB_ENV
+          echo "已彻底禁用 LFS 过滤器"
 
       - name: Fetch upstream master
         run: |
@@ -184,7 +193,14 @@ jobs:
       - name: Push to SINAN (发布给设备)
         if: steps.merge.outputs.merge_status == 'success' && (steps.validate.outputs.validation == 'pass' || github.event.inputs.skip_validation == 'true')
         run: |
-          git push origin SINAN
+          # 关键：禁用 LFS 上传，避免因 LFS 服务器认证失败导致推送中止
+          git config --local filter.lfs.smudge "git-lfs smudge --skip -- %f"
+          git config --local filter.lfs.process "git-lfs filter-process --skip"
+          git config --local filter.lfs.required false
+          git config --local lfs.fetchexclude "*"
+          git config --local lfs.pushurl ""
+          GIT_LFS_SKIP_PUSH=1 git -c filter.lfs.required=false -c lfs.pushurl= \
+            push origin SINAN 2>&1 | tail -5
           echo "✓ 已推送到 SINAN，设备将自动更新"
 
       - name: Auto-revert on validation failure
