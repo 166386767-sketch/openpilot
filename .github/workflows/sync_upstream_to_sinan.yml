@@ -83,27 +83,46 @@ jobs:
               merge upstream/master --no-edit \
               -m "chore(sync): auto-merge upstream master ($(date +%Y-%m-%d))"
           MERGE_RC=$?
-          if [ $MERGE_RC -eq 0 ]; then
-            echo "MERGE_STATUS=success" >> $GITHUB_OUTPUT
-            echo "✓ 合并成功"
-          else
-            # 检查是否真的是冲突
-            if [ -f .git/MERGE_HEAD ]; then
-              echo "MERGE_STATUS=conflict" >> $GITHUB_OUTPUT
-              echo "✗ 存在代码冲突，正在中止合并"
-              git merge --abort
-            else
-              echo "MERGE_STATUS=lfs_error" >> $GITHUB_OUTPUT
-              echo "✗ 合并因非冲突原因失败（可能是 LFS）"
-              git merge --abort 2>/dev/null || true
+
+          # 关键：自动解决 opendbc_repo 子模块冲突（始终保留我们的 SINAN fork）
+          if [ -f .git/MERGE_HEAD ]; then
+            echo "检测到冲突，尝试自动解决子模块冲突..."
+            # 冲突后 opendbc_repo 指向 FAILED 状态，强制恢复为我们的 fork 提交
+            OUR_OPENDBC=$(git rev-parse HEAD:opendbc_repo 2>/dev/null)
+            if [ -n "$OUR_OPENDBC" ]; then
+              git update-index --cacheinfo 160000,$OUR_OPENDBC,opendbc_repo 2>/dev/null \
+                || git add opendbc_repo 2>/dev/null
+              echo "已保留我方 opendbc 子模块: ${OUR_OPENDBC:0:10}"
             fi
+
+            # 检查是否还有其他未解决的冲突
+            REMAIN=$(git diff --name-only --diff-filter=U 2>/dev/null | grep -v '^opendbc_repo$' | wc -l)
+            if [ "$REMAIN" -eq 0 ]; then
+              git -c filter.lfs.smudge= -c filter.lfs.required=false \
+                  commit --no-edit -m "chore(sync): auto-merge upstream master ($(date +%Y-%m-%d))" && {
+                echo "merge_status=success" >> $GITHUB_OUTPUT
+                echo "✓ 合并成功（已自动解决子模块冲突）"
+              }
+            else
+              echo "merge_status=conflict" >> $GITHUB_OUTPUT
+              echo "✗ 仍有 $REMAIN 个文件冲突，需人工处理："
+              git diff --name-only --diff-filter=U
+              git merge --abort
+            fi
+          elif [ $MERGE_RC -eq 0 ]; then
+            echo "merge_status=success" >> $GITHUB_OUTPUT
+            echo "✓ 合并成功（无冲突）"
+          else
+            echo "merge_status=error" >> $GITHUB_OUTPUT
+            echo "✗ 合并失败（非冲突原因）"
+            git merge --abort 2>/dev/null || true
           fi
           exit 0
 
       # ========== 完整性校验：确保 Z6 iDD 适配未被破坏 ==========
       - name: Validate Z6 iDD adaptations
         id: validate
-        if: steps.merge.outputs.MERGE_STATUS == 'success'
+        if: steps.merge.outputs.merge_status == 'success'
         run: |
           set +e
           FAIL=0
@@ -155,32 +174,32 @@ jobs:
           fi
 
           if [ "$FAIL" -eq 0 ]; then
-            echo "VALIDATION=pass" >> $GITHUB_OUTPUT
+            echo "validation=pass" >> $GITHUB_OUTPUT
             echo "=== 校验全部通过 ==="
           else
-            echo "VALIDATION=fail" >> $GITHUB_OUTPUT
+            echo "validation=fail" >> $GITHUB_OUTPUT
             echo "=== 校验失败，将不发布 ==="
           fi
 
       - name: Push to SINAN (发布给设备)
-        if: steps.merge.outputs.MERGE_STATUS == 'success' && (steps.validate.outputs.VALIDATION == 'pass' || github.event.inputs.skip_validation == 'true')
+        if: steps.merge.outputs.merge_status == 'success' && (steps.validate.outputs.validation == 'pass' || github.event.inputs.skip_validation == 'true')
         run: |
           git push origin SINAN
           echo "✓ 已推送到 SINAN，设备将自动更新"
 
       - name: Auto-revert on validation failure
-        if: steps.merge.outputs.MERGE_STATUS == 'success' && steps.validate.outputs.VALIDATION == 'fail'
+        if: steps.merge.outputs.merge_status == 'success' && steps.validate.outputs.validation == 'fail'
         run: |
           git reset --hard origin/SINAN
           echo "已回滚，SINAN 保持不变"
 
       - name: Create issue on failure
-        if: failure() || steps.merge.outputs.MERGE_STATUS == 'conflict' || steps.validate.outputs.VALIDATION == 'fail'
+        if: failure() || steps.merge.outputs.merge_status == 'conflict' || steps.validate.outputs.validation == 'fail'
         uses: actions/github-script@v7
         with:
           script: |
-            const status = '${{ steps.merge.outputs.MERGE_STATUS }}';
-            const validation = '${{ steps.validate.outputs.VALIDATION }}';
+            const status = '${{ steps.merge.outputs.merge_status }}';
+            const validation = '${{ steps.validate.outputs.validation }}';
             let title, body;
             if (status === 'conflict') {
               title = '⚠️ 官方同步冲突：SINAN 分支需要手动处理';
