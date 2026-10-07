@@ -146,8 +146,8 @@ msgid "Change Language"
 msgstr "Dili Değiştir"
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
-msgid "Changing this setting will restart openpilot if the car is powered on."
-msgstr " Bu ayarı değiştirmek, araç çalışıyorsa openpilot'u yeniden başlatacaktır."
+msgid "Changing this setting will restart SINAN if the car is powered on."
+msgstr " Bu ayarı değiştirmek, araç çalışıyorsa SINAN'u yeniden başlatacaktır."
 
 #: openpilot/selfdrive/ui/widgets/pairing_dialog.py
 msgid "Click \"add new device\" and scan the QR code on the right"
@@ -170,8 +170,8 @@ msgid "Decline"
 msgstr "Reddet"
 
 #: openpilot/selfdrive/ui/layouts/onboarding.py
-msgid "Decline, uninstall openpilot"
-msgstr "Reddet, openpilot'u kaldır"
+msgid "Decline, uninstall SINAN"
+msgstr "Reddet, SINAN'u kaldır"
 
 #: openpilot/selfdrive/ui/layouts/settings/settings.py
 msgid "Developer"
@@ -255,16 +255,16 @@ msgid "Enable Tethering"
 msgstr "İnternet Paylaşımını Etkinleştir"
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
-msgid "Enable driver monitoring even when openpilot is not engaged."
-msgstr "openpilot devrede değilken bile sürücü izlemesini etkinleştir."
+msgid "Enable driver monitoring even when SINAN is not engaged."
+msgstr "SINAN devrede değilken bile sürücü izlemesini etkinleştir."
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
-msgid "Enable openpilot"
-msgstr "openpilot'u etkinleştir"
+msgid "Enable SINAN"
+msgstr "SINAN'u etkinleştir"
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
-msgid "Enable the openpilot longitudinal control (alpha) toggle to allow Experimental mode."
-msgstr "Deneysel modu etkinleştirmek için openpilot boylamsal kontrolünü (alfa) açın."
+msgid "Enable the SINAN longitudinal control (alpha) toggle to allow Experimental mode."
+msgstr "Deneysel modu etkinleştirmek için SINAN boylamsal kontrolünü (alfa) açın."
 
 #: openpilot/system/ui/widgets/network.py
 msgid "Enter APN"
@@ -376,8 +376,8 @@ msgid "MAX"
 msgstr "MAKS"
 
 #: openpilot/selfdrive/ui/widgets/setup.py
-msgid "Maximize your training data uploads to improve openpilot's driving models."
-msgstr "openpilot'un sürüş modellerini iyileştirmek için eğitim veri yüklemelerinizi en üst düzeye çıkarın."
+msgid "Maximize your training data uploads to improve SINAN's driving models."
+msgstr "SINAN'un sürüş modellerini iyileştirmek için eğitim veri yüklemelerinizi en üst düzeye çıkarın."
 
 #: openpilot/selfdrive/ui/layouts/settings/device.py
 msgid "N/A"
@@ -542,8 +542,8 @@ msgid "Review Training Guide"
 msgstr "Eğitim Kılavuzunu İncele"
 
 #: openpilot/selfdrive/ui/layouts/settings/device.py
-msgid "Review the rules, features, and limitations of openpilot"
-msgstr "openpilot'un kurallarını, özelliklerini ve sınırlamalarını gözden geçirin"
+msgid "Review the rules, features, and limitations of SINAN"
+msgstr "SINAN'un kurallarını, özelliklerini ve sınırlamalarını gözden geçirin"
 
 #: openpilot/selfdrive/ui/layouts/settings/software.py
 msgid "SELECT"
@@ -658,12 +658,12 @@ msgid "Waiting to start"
 msgstr "Başlatma bekleniyor"
 
 #: openpilot/selfdrive/ui/layouts/onboarding.py
-msgid "Welcome to openpilot"
-msgstr "openpilot'a hoş geldiniz"
+msgid "Welcome to SINAN"
+msgstr "SINAN'a hoş geldiniz"
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
-msgid "When enabled, pressing the accelerator pedal will disengage openpilot."
-msgstr "Etkinleştirildiğinde, gaz pedalına basmak openpilot'u devreden çıkarır."
+msgid "When enabled, pressing the accelerator pedal will disengage SINAN."
+msgstr "Etkinleştirildiğinde, gaz pedalına basmak SINAN'u devreden çıkarır."
 
 #: openpilot/selfdrive/ui/layouts/sidebar.py
 msgid "Wi-Fi"
@@ -678,12 +678,12 @@ msgid "Wrong password"
 msgstr "Yanlış şifre"
 
 #: openpilot/selfdrive/ui/layouts/onboarding.py
-msgid "You must accept the Terms and Conditions in order to use openpilot."
-msgstr "openpilot'u kullanmak için Şartlar ve Koşulları kabul etmelisiniz."
+msgid "You must accept the Terms and Conditions in order to use SINAN."
+msgstr "SINAN'u kullanmak için Şartlar ve Koşulları kabul etmelisiniz."
 
 #: openpilot/selfdrive/ui/layouts/onboarding.py
-msgid "You must accept the Terms and Conditions to use openpilot. Read the latest terms at https://comma.ai/terms before continuing."
-msgstr "openpilot'u kullanmak için Şartlar ve Koşulları kabul etmelisiniz. Devam etmeden önce en güncel şartları https://comma.ai/terms adresinde okuyun."
+msgid "You must accept the Terms and Conditions to use SINAN. Read the latest terms at https://comma.ai/terms before continuing."
+msgstr "SINAN'u kullanmak için Şartlar ve Koşulları kabul etmelisiniz. Devam etmeden önce en güncel şartları https://comma.ai/terms adresinde okuyun."
 
 #: openpilot/selfdrive/ui/onroad/cabin_camera_dialog.py
 msgid "camera starting"
@@ -750,20 +750,20 @@ msgid "now"
 msgstr "şimdi"
 
 #: openpilot/selfdrive/ui/layouts/settings/developer.py
-msgid "openpilot Longitudinal Control (Alpha)"
-msgstr "openpilot Boylamsal Kontrol (Alfa)"
+msgid "SINAN Longitudinal Control (Alpha)"
+msgstr "SINAN Boylamsal Kontrol (Alfa)"
 
 #: openpilot/selfdrive/ui/onroad/alert_renderer.py
-msgid "openpilot Unavailable"
-msgstr "openpilot Kullanılamıyor"
+msgid "SINAN Unavailable"
+msgstr "SINAN Kullanılamıyor"
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
-msgid "openpilot longitudinal control may come in a future update."
-msgstr "openpilot boylamsal kontrolü gelecekteki bir güncellemede gelebilir."
+msgid "SINAN longitudinal control may come in a future update."
+msgstr "SINAN boylamsal kontrolü gelecekteki bir güncellemede gelebilir."
 
 #: openpilot/selfdrive/ui/layouts/settings/device.py
-msgid "openpilot requires the device to be mounted within 4° left or right and within 5° up or 9° down."
-msgstr "openpilot, cihazın sağa/sola 4° ve yukarı 5° veya aşağı 9° içinde monte edilmesini gerektirir."
+msgid "SINAN requires the device to be mounted within 4° left or right and within 5° up or 9° down."
+msgstr "SINAN, cihazın sağa/sola 4° ve yukarı 5° veya aşağı 9° içinde monte edilmesini gerektirir."
 
 #: openpilot/selfdrive/ui/layouts/settings/device.py
 msgid "right"

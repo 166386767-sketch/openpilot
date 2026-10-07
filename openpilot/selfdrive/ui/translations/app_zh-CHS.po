@@ -146,8 +146,8 @@ msgid "Change Language"
 msgstr "更改语言"
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
-msgid "Changing this setting will restart openpilot if the car is powered on."
-msgstr "若车辆通电，更改此设置将重启 openpilot。"
+msgid "Changing this setting will restart SINAN if the car is powered on."
+msgstr "若车辆通电，更改此设置将重启 SINAN。"
 
 #: openpilot/selfdrive/ui/widgets/pairing_dialog.py
 msgid "Click \"add new device\" and scan the QR code on the right"
@@ -170,8 +170,8 @@ msgid "Decline"
 msgstr "拒绝"
 
 #: openpilot/selfdrive/ui/layouts/onboarding.py
-msgid "Decline, uninstall openpilot"
-msgstr "拒绝并卸载 openpilot"
+msgid "Decline, uninstall SINAN"
+msgstr "拒绝并卸载 SINAN"
 
 #: openpilot/selfdrive/ui/layouts/settings/settings.py
 msgid "Developer"
@@ -255,16 +255,16 @@ msgid "Enable Tethering"
 msgstr "启用网络共享"
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
-msgid "Enable driver monitoring even when openpilot is not engaged."
-msgstr "即使未启用 openpilot 也启用驾驶员监控。"
+msgid "Enable driver monitoring even when SINAN is not engaged."
+msgstr "即使未启用 SINAN 也启用驾驶员监控。"
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
-msgid "Enable openpilot"
-msgstr "启用 openpilot"
+msgid "Enable SINAN"
+msgstr "启用 SINAN"
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
-msgid "Enable the openpilot longitudinal control (alpha) toggle to allow Experimental mode."
-msgstr "启用 openpilot 纵向控制（alpha）开关，以使用实验模式。"
+msgid "Enable the SINAN longitudinal control (alpha) toggle to allow Experimental mode."
+msgstr "启用 SINAN 纵向控制（alpha）开关，以使用实验模式。"
 
 #: openpilot/system/ui/widgets/network.py
 msgid "Enter APN"
@@ -376,8 +376,8 @@ msgid "MAX"
 msgstr "最大"
 
 #: openpilot/selfdrive/ui/widgets/setup.py
-msgid "Maximize your training data uploads to improve openpilot's driving models."
-msgstr "最大化上传训练数据，以改进 openpilot 的驾驶模型。"
+msgid "Maximize your training data uploads to improve SINAN's driving models."
+msgstr "最大化上传训练数据，以改进 SINAN 的驾驶模型。"
 
 #: openpilot/selfdrive/ui/layouts/settings/device.py
 msgid "N/A"
@@ -542,8 +542,8 @@ msgid "Review Training Guide"
 msgstr "查看训练指南"
 
 #: openpilot/selfdrive/ui/layouts/settings/device.py
-msgid "Review the rules, features, and limitations of openpilot"
-msgstr "查看 openpilot 的规则、功能与限制"
+msgid "Review the rules, features, and limitations of SINAN"
+msgstr "查看 SINAN 的规则、功能与限制"
 
 #: openpilot/selfdrive/ui/layouts/settings/software.py
 msgid "SELECT"
@@ -658,12 +658,12 @@ msgid "Waiting to start"
 msgstr "等待开始"
 
 #: openpilot/selfdrive/ui/layouts/onboarding.py
-msgid "Welcome to openpilot"
-msgstr "欢迎使用 openpilot"
+msgid "Welcome to SINAN"
+msgstr "欢迎使用 SINAN"
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
-msgid "When enabled, pressing the accelerator pedal will disengage openpilot."
-msgstr "启用后，踩下加速踏板将会脱离 openpilot。"
+msgid "When enabled, pressing the accelerator pedal will disengage SINAN."
+msgstr "启用后，踩下加速踏板将会脱离 SINAN。"
 
 #: openpilot/selfdrive/ui/layouts/sidebar.py
 msgid "Wi-Fi"
@@ -678,12 +678,12 @@ msgid "Wrong password"
 msgstr "密码错误"
 
 #: openpilot/selfdrive/ui/layouts/onboarding.py
-msgid "You must accept the Terms and Conditions in order to use openpilot."
-msgstr "您必须接受条款与条件才能使用 openpilot。"
+msgid "You must accept the Terms and Conditions in order to use SINAN."
+msgstr "您必须接受条款与条件才能使用 SINAN。"
 
 #: openpilot/selfdrive/ui/layouts/onboarding.py
-msgid "You must accept the Terms and Conditions to use openpilot. Read the latest terms at https://comma.ai/terms before continuing."
-msgstr "您必须接受条款与条件才能使用 openpilot。继续前请阅读 https://comma.ai/terms 上的最新条款。"
+msgid "You must accept the Terms and Conditions to use SINAN. Read the latest terms at https://comma.ai/terms before continuing."
+msgstr "您必须接受条款与条件才能使用 SINAN。继续前请阅读 https://comma.ai/terms 上的最新条款。"
 
 #: openpilot/selfdrive/ui/onroad/cabin_camera_dialog.py
 msgid "camera starting"
@@ -750,20 +750,20 @@ msgid "now"
 msgstr "现在"
 
 #: openpilot/selfdrive/ui/layouts/settings/developer.py
-msgid "openpilot Longitudinal Control (Alpha)"
-msgstr "openpilot 纵向控制（Alpha）"
+msgid "SINAN Longitudinal Control (Alpha)"
+msgstr "SINAN 纵向控制（Alpha）"
 
 #: openpilot/selfdrive/ui/onroad/alert_renderer.py
-msgid "openpilot Unavailable"
-msgstr "openpilot 无法使用"
+msgid "SINAN Unavailable"
+msgstr "SINAN 无法使用"
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
-msgid "openpilot longitudinal control may come in a future update."
-msgstr "openpilot 纵向控制可能会在未来更新中提供。"
+msgid "SINAN longitudinal control may come in a future update."
+msgstr "SINAN 纵向控制可能会在未来更新中提供。"
 
 #: openpilot/selfdrive/ui/layouts/settings/device.py
-msgid "openpilot requires the device to be mounted within 4° left or right and within 5° up or 9° down."
-msgstr "openpilot 要求设备安装在左右 4°、上 5° 或下 9° 以内。"
+msgid "SINAN requires the device to be mounted within 4° left or right and within 5° up or 9° down."
+msgstr "SINAN 要求设备安装在左右 4°、上 5° 或下 9° 以内。"
 
 #: openpilot/selfdrive/ui/layouts/settings/device.py
 msgid "right"

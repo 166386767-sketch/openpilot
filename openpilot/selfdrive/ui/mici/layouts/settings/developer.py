@@ -21,10 +21,10 @@ class AlphaLongConfirmPage(NavScroller):
       GreyBigButton("enabling alpha longitudinal", "scroll to continue",
                     gui_app.texture("icons_mici/setup/warning.png", 64, 64)),
       GreyBigButton("", "WARNING: alpha longitudinal control may disable Automatic Emergency Braking (AEB)"),
-      GreyBigButton("", "On this car, openpilot defaults to the stock system's built-in ACC."),
-      GreyBigButton("", "Enabling this will switch to openpilot longitudinal control."),
-      GreyBigButton("", "Using Experimental mode is recommended with openpilot longitudinal control alpha."),
-      GreyBigButton("", "Changing this setting will restart openpilot if the car is powered on."),
+      GreyBigButton("", "On this car, SINAN defaults to the stock system's built-in ACC."),
+      GreyBigButton("", "Enabling this will switch to SINAN longitudinal control."),
+      GreyBigButton("", "Using Experimental mode is recommended with SINAN longitudinal control alpha."),
+      GreyBigButton("", "Changing this setting will restart SINAN if the car is powered on."),
       accept,
     ])
 

@@ -146,7 +146,7 @@ msgid "Pair your device with comma connect (connect.comma.ai) and claim your com
 msgstr ""
 
 #: openpilot/selfdrive/ui/widgets/setup.py
-msgid "Maximize your training data uploads to improve openpilot's driving models."
+msgid "Maximize your training data uploads to improve SINAN's driving models."
 msgstr ""
 
 #: openpilot/selfdrive/ui/widgets/setup.py
@@ -289,11 +289,11 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: openpilot/selfdrive/ui/layouts/onboarding.py
-msgid "Welcome to openpilot"
+msgid "Welcome to SINAN"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/onboarding.py
-msgid "You must accept the Terms and Conditions to use openpilot. Read the latest terms at https://comma.ai/terms before continuing."
+msgid "You must accept the Terms and Conditions to use SINAN. Read the latest terms at https://comma.ai/terms before continuing."
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/onboarding.py
@@ -305,11 +305,11 @@ msgid "Agree"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/onboarding.py
-msgid "You must accept the Terms and Conditions in order to use openpilot."
+msgid "You must accept the Terms and Conditions in order to use SINAN."
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/onboarding.py
-msgid "Decline, uninstall openpilot"
+msgid "Decline, uninstall SINAN"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/sidebar.py
@@ -385,11 +385,11 @@ msgid "Preview the cabin camera to ensure that driver monitoring has good visibi
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/device.py
-msgid "openpilot requires the device to be mounted within 4° left or right and within 5° up or 9° down."
+msgid "SINAN requires the device to be mounted within 4° left or right and within 5° up or 9° down."
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/device.py
-msgid "Review the rules, features, and limitations of openpilot"
+msgid "Review the rules, features, and limitations of SINAN"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/device.py
@@ -553,7 +553,7 @@ msgid "Lateral Maneuver Mode"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/developer.py
-msgid "openpilot Longitudinal Control (Alpha)"
+msgid "SINAN Longitudinal Control (Alpha)"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/developer.py
@@ -696,11 +696,11 @@ msgid "Developer"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
-msgid "When enabled, pressing the accelerator pedal will disengage openpilot."
+msgid "When enabled, pressing the accelerator pedal will disengage SINAN."
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
-msgid "Enable driver monitoring even when openpilot is not engaged."
+msgid "Enable driver monitoring even when SINAN is not engaged."
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
@@ -720,7 +720,7 @@ msgid "Driving Personality"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
-msgid "Changing this setting will restart openpilot if the car is powered on."
+msgid "Changing this setting will restart SINAN if the car is powered on."
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
@@ -728,7 +728,7 @@ msgid "Experimental mode is currently unavailable on this car since the car's st
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
-msgid "Enable openpilot"
+msgid "Enable SINAN"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
@@ -760,7 +760,7 @@ msgid "Use Metric System"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
-msgid "openpilot longitudinal control may come in a future update."
+msgid "SINAN longitudinal control may come in a future update."
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
@@ -776,7 +776,7 @@ msgid "Relaxed"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
-msgid "Enable the openpilot longitudinal control (alpha) toggle to allow Experimental mode."
+msgid "Enable the SINAN longitudinal control (alpha) toggle to allow Experimental mode."
 msgstr ""
 
 #: openpilot/selfdrive/ui/onroad/hud_renderer.py
@@ -796,7 +796,7 @@ msgid "camera starting"
 msgstr ""
 
 #: openpilot/selfdrive/ui/onroad/alert_renderer.py
-msgid "openpilot Unavailable"
+msgid "SINAN Unavailable"
 msgstr ""
 
 #: openpilot/selfdrive/ui/onroad/alert_renderer.py

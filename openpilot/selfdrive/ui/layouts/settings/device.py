@@ -22,8 +22,8 @@ from openpilot.system.ui.widgets.scroller_tici import Scroller
 DESCRIPTIONS = {
   'pair_device': tr_noop("Pair your device with comma connect (connect.comma.ai) and claim your comma prime offer."),
   'cabin_camera': tr_noop("Preview the cabin camera to ensure that driver monitoring has good visibility. (vehicle must be off)"),
-  'reset_calibration': tr_noop("openpilot requires the device to be mounted within 4° left or right and within 5° up or 9° down."),
-  'review_guide': tr_noop("Review the rules, features, and limitations of openpilot"),
+  'reset_calibration': tr_noop("SINAN requires the device to be mounted within 4° left or right and within 5° up or 9° down."),
+  'review_guide': tr_noop("Review the rules, features, and limitations of SINAN"),
 }
 
 
@@ -153,8 +153,8 @@ class DeviceLayout(Widget):
         cloudlog.exception("invalid LiveTorqueParameters")
 
     desc += "<br><br>"
-    desc += tr("openpilot is continuously calibrating, resetting is rarely required. " +
-               "Resetting calibration will restart openpilot if the car is powered on.")
+    desc += tr("SINAN is continuously calibrating, resetting is rarely required. " +
+               "Resetting calibration will restart SINAN if the car is powered on.")
 
     self._reset_calib_btn.set_description(desc)
 

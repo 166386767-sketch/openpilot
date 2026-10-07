@@ -77,8 +77,10 @@ jobs:
           echo "behind=$BEHIND" >> $GITHUB_OUTPUT
           if [ "$BEHIND" -eq 0 ]; then
             echo "已是最新，无需同步"
+            echo "uptodate=true" >> $GITHUB_OUTPUT
           else
             echo "落后 $BEHIND 个提交，开始同步"
+            echo "uptodate=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Merge upstream master
@@ -122,9 +124,15 @@ jobs:
             echo "merge_status=success" >> $GITHUB_OUTPUT
             echo "✓ 合并成功（无冲突）"
           else
-            echo "merge_status=error" >> $GITHUB_OUTPUT
-            echo "✗ 合并失败（非冲突原因）"
-            git merge --abort 2>/dev/null || true
+            # 合并无实际变化时 git 会返回非 0，但不算错误
+            if git diff --quiet HEAD 2>/dev/null && [ ! -f .git/MERGE_HEAD ]; then
+              echo "merge_status=success" >> $GITHUB_OUTPUT
+              echo "✓ 上游无实际变更，视为已同步"
+            else
+              echo "merge_status=error" >> $GITHUB_OUTPUT
+              echo "✗ 合并失败（非冲突原因）"
+              git merge --abort 2>/dev/null || true
+            fi
           fi
           exit 0
 
@@ -134,6 +142,17 @@ jobs:
         if: steps.merge.outputs.merge_status == 'success'
         run: |
           set +e
+
+          # 若本次合并未产生任何实际变更，直接视为通过
+          CHANGED=$(git rev-list --count origin/SINAN..HEAD 2>/dev/null || echo 0)
+          if [ "$CHANGED" -eq 0 ]; then
+            echo "上游无新变更，无需校验"
+            echo "validation=pass" >> $GITHUB_OUTPUT
+            echo "nochange=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          echo "nochange=false" >> $GITHUB_OUTPUT
+
           FAIL=0
           echo "=== 开始校验 Z6 iDD 适配完整性 ==="
 
@@ -193,6 +212,10 @@ jobs:
       - name: Push to SINAN (发布给设备)
         if: steps.merge.outputs.merge_status == 'success' && (steps.validate.outputs.validation == 'pass' || github.event.inputs.skip_validation == 'true')
         run: |
+          if [ "${{ steps.validate.outputs.nochange }}" = "true" ]; then
+            echo "上游无新变更，无需推送。SINAN 已是最新。"
+            exit 0
+          fi
           # 关键：禁用 LFS 上传，避免因 LFS 服务器认证失败导致推送中止
           git config --local filter.lfs.smudge "git-lfs smudge --skip -- %f"
           git config --local filter.lfs.process "git-lfs filter-process --skip"
@@ -209,8 +232,11 @@ jobs:
           git reset --hard origin/SINAN
           echo "已回滚，SINAN 保持不变"
 
-      - name: Create issue on failure
+      # 失败通知：优先创建 Issue，仓库未开启 Issues 时自动降级为日志输出，
+      # 绝不能因为通知环节失败而让整个任务变红（否则会掩盖真实结果）。
+      - name: Notify on failure
         if: failure() || steps.merge.outputs.merge_status == 'conflict' || steps.validate.outputs.validation == 'fail'
+        continue-on-error: true
         uses: actions/github-script@v7
         with:
           script: |
@@ -227,10 +253,18 @@ jobs:
               title = '⚠️ 同步工作流执行失败';
               body = '自动同步流程出现异常，请查看 Actions 运行日志。';
             }
-            await github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: title,
-              body: body,
-              labels: ['upstream-sync']
-            });
+
+            try {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                labels: ['upstream-sync']
+              });
+              console.log('已创建提醒 Issue');
+            } catch (e) {
+              // 仓库未启用 Issues（HTTP 410）或无权限时走这里，仅打印日志
+              core.warning(`无法创建 Issue（${e.status || 'unknown'}）：${title}`);
+              core.warning(body);
+            }

@@ -9,9 +9,9 @@ from openpilot.selfdrive.ui.mici.layouts.settings.firehose import FirehoseLayout
 
 TITLE = tr_noop("Firehose Mode")
 DESCRIPTION = tr_noop(
-  "openpilot learns to drive by watching humans, like you, drive.\n\n"
+  "SINAN learns to drive by watching humans, like you, drive.\n\n"
   + "Firehose Mode allows you to maximize your training data uploads to improve "
-  + "openpilot's driving models. More data means bigger models, which means better Experimental Mode."
+  + "SINAN's driving models. More data means bigger models, which means better Experimental Mode."
 )
 INSTRUCTIONS = tr_noop(
   "For maximum effectiveness, bring your device inside and connect to a good USB-C adapter and Wi-Fi weekly.\n\n"

@@ -66,7 +66,7 @@ class Alert:
 
 # Pre-defined alert instances
 ALERT_STARTUP_PENDING = Alert(
-  text1="openpilot Unavailable",
+  text1="SINAN Unavailable",
   text2="Waiting to start",
   size=AlertSize.mid,
   status=AlertStatus.normal,

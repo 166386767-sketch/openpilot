@@ -1,20 +1,20 @@
 [submodule "panda"]
-  path = panda
-  url = https://github.com/commaai/panda.git
+	path = panda
+	url = https://github.com/commaai/panda.git
 [submodule "opendbc"]
 	path = opendbc_repo
 	url = https://github.com/SiNan-Z6/opendbc.git
 	branch = SINAN
 [submodule "msgq"]
-  path = msgq_repo
-  url = https://github.com/commaai/msgq.git
+	path = msgq_repo
+	url = https://github.com/commaai/msgq.git
 [submodule "rednose_repo"]
-  path = rednose_repo
-  url = https://github.com/commaai/rednose.git
+	path = rednose_repo
+	url = https://github.com/commaai/rednose.git
 [submodule "teleoprtc_repo"]
-  path = teleoprtc_repo
-  url = https://github.com/commaai/teleoprtc.git
+	path = teleoprtc_repo
+	url = https://github.com/commaai/teleoprtc.git
 [submodule "tinygrad"]
-  path = tinygrad_repo
-  url = https://github.com/tinygrad/tinygrad.git
-  branch = master
+	path = tinygrad_repo
+	url = https://github.com/tinygrad/tinygrad.git
+	branch = master

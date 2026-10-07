@@ -21,17 +21,11 @@ fi
 
 export STAGING_ROOT="/data/safe_staging"
 
-# BEGIN SINAN Z6 iDD defaults
+# ---------------------------------------------------------------------------
+# 车型与设备配置
+# ---------------------------------------------------------------------------
+# 欧尚 Z6 iDD：固定车型指纹，跳过自动识别流程，确保开机即锁定对应车控参数。
 export FINGERPRINT="CHANGAN_Z6_IDD"
-export DISABLE_DRIVER=1
-# END SINAN Z6 iDD defaults
 
-# BEGIN SINAN Z6 iDD defaults
-export FINGERPRINT="CHANGAN_Z6_IDD"
+# 本车型座舱无内置驾驶员监控摄像头，关闭 DMS 相关进程与提示，避免误报警告。
 export DISABLE_DRIVER=1
-# END SINAN Z6 iDD defaults
-
-# BEGIN SINAN Z6 iDD defaults
-export FINGERPRINT="CHANGAN_Z6_IDD"
-export DISABLE_DRIVER=1
-# END SINAN Z6 iDD defaults
