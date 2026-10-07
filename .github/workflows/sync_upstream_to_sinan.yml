@@ -1,59 +1,201 @@
 name: Sync Upstream to SINAN
 
+# ============================================================
+# 自动同步官方 commaai/openpilot 更新到 SINAN 分支
+#
+# 流程：同步官方 → 合并 → 完整性校验 → 通过则发布
+# 校验不通过则中止，不会把坏版本推送给用户设备
+# ============================================================
+
 on:
   schedule:
-    # 每天 08:00 UTC 检查上游更新
+    # 每天 08:00 UTC (北京时间 16:00) 检查官方更新
     - cron: '0 8 * * *'
   workflow_dispatch:
-    # 允许手动触发
+    inputs:
+      skip_validation:
+        description: '跳过校验直接发布（危险，仅紧急时用）'
+        required: false
+        default: 'false'
+        type: choice
+        options: ['false', 'true']
+
+# 需要写权限才能推送
+permissions:
+  contents: write
+  issues: write
 
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout SiNan-Z6/openpilot
+      - name: Checkout SINAN
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
           ref: SINAN
+          lfs: false          # 不下载 LFS 大文件（fork 无 LFS 权限）
 
       - name: Configure Git
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "sinan-sync-bot"
+          git config user.email "sync-bot@users.noreply.github.com"
+          # 关键：禁用 LFS smudge，避免因缺少 LFS 大文件导致合并失败
+          git config --global filter.lfs.smudge "git-lfs smudge --skip -- %f"
+          git config --global filter.lfs.process "git-lfs filter-process --skip"
+          git config --global filter.lfs.required false
+          # 移除 LFS 过滤器，确保检出时跳过 LFS 对象
+          git config --global lfs.fetchexclude "*"
+          git lfs install --skip-smudge --local 2>/dev/null || true
 
-      - name: Add upstream remote
-        run: git remote add upstream https://github.com/commaai/openpilot.git
-
-      - name: Fetch upstream
-        run: git fetch upstream master
-
-      - name: Merge upstream/master into SINAN
-        id: merge
+      - name: Disable LFS filters (避免大文件下载失败)
         run: |
-          git checkout SINAN
-          if git merge upstream/master -m "Auto-sync: merge upstream master into SINAN ($(date +%Y-%m-%d))"; then
-            echo "MERGE_STATUS=success" >> $GITHUB_OUTPUT
+          # 删除 LFS 过滤规则，让 git 把大文件当普通文件处理
+          git config --local --remove-section filter.lfs 2>/dev/null || true
+          git config --local lfs.fetchexclude "*"
+          echo "已禁用 LFS 过滤器"
+
+      - name: Fetch upstream master
+        run: |
+          git remote add upstream https://github.com/commaai/openpilot.git 2>/dev/null || true
+          git fetch upstream master
+
+      - name: Check if already up to date
+        id: check
+        run: |
+          BEHIND=$(git rev-list --count HEAD..upstream/master)
+          echo "behind=$BEHIND" >> $GITHUB_OUTPUT
+          if [ "$BEHIND" -eq 0 ]; then
+            echo "已是最新，无需同步"
           else
-            echo "MERGE_STATUS=conflict" >> $GITHUB_OUTPUT
-            git merge --abort
-            exit 1
+            echo "落后 $BEHIND 个提交，开始同步"
           fi
 
-      - name: Push to SINAN
-        if: steps.merge.outputs.MERGE_STATUS == 'success'
-        run: git push origin SINAN
+      - name: Merge upstream master
+        id: merge
+        if: steps.check.outputs.behind != '0'
+        run: |
+          set +e
+          # 用 -c 临时禁用 LFS 过滤器，避免大文件下载失败中断合并
+          git -c filter.lfs.smudge= -c filter.lfs.required=false \
+              -c filter.lfs.clean=cat \
+              merge upstream/master --no-edit \
+              -m "chore(sync): auto-merge upstream master ($(date +%Y-%m-%d))"
+          MERGE_RC=$?
+          if [ $MERGE_RC -eq 0 ]; then
+            echo "MERGE_STATUS=success" >> $GITHUB_OUTPUT
+            echo "✓ 合并成功"
+          else
+            # 检查是否真的是冲突
+            if [ -f .git/MERGE_HEAD ]; then
+              echo "MERGE_STATUS=conflict" >> $GITHUB_OUTPUT
+              echo "✗ 存在代码冲突，正在中止合并"
+              git merge --abort
+            else
+              echo "MERGE_STATUS=lfs_error" >> $GITHUB_OUTPUT
+              echo "✗ 合并因非冲突原因失败（可能是 LFS）"
+              git merge --abort 2>/dev/null || true
+            fi
+          fi
+          exit 0
 
-      - name: Notify on failure
-        if: failure()
+      # ========== 完整性校验：确保 Z6 iDD 适配未被破坏 ==========
+      - name: Validate Z6 iDD adaptations
+        id: validate
+        if: steps.merge.outputs.MERGE_STATUS == 'success'
+        run: |
+          set +e
+          FAIL=0
+          echo "=== 开始校验 Z6 iDD 适配完整性 ==="
+
+          # 1. 强制指纹必须存在
+          if grep -q 'FINGERPRINT="CHANGAN_Z6_IDD"' launch_env.sh; then
+            echo "✓ 指纹配置存在"
+          else
+            echo "✗ 指纹配置丢失！"; FAIL=1
+          fi
+
+          # 2. 禁用驾驶员摄像头
+          if grep -q 'DISABLE_DRIVER=1' launch_env.sh; then
+            echo "✓ 驾驶员摄像头禁用配置存在"
+          else
+            echo "✗ 驾驶员摄像头禁用配置丢失！"; FAIL=1
+          fi
+
+          # 3. 核心适配文件必须存在
+          for f in openpilot/selfdrive/car/sinan_tuning.py \
+                   openpilot/selfdrive/ui/sinan_theme.py \
+                   selfdrive/car/cruise.py \
+                   selfdrive/controls/radard.py; do
+            if [ -f "$f" ]; then
+              echo "✓ $f"
+            else
+              echo "✗ 关键文件缺失: $f"; FAIL=1
+            fi
+          done
+
+          # 4. card.py 中的调参钩子必须保留
+          if grep -q "apply_idd_tuning" openpilot/selfdrive/car/card.py; then
+            echo "✓ card.py 调参钩子存在"
+          else
+            echo "✗ card.py 调参钩子丢失！"; FAIL=1
+          fi
+
+          # 5. Python 语法检查（核心文件）
+          python3 -m py_compile openpilot/selfdrive/car/sinan_tuning.py 2>/dev/null \
+            && echo "✓ sinan_tuning.py 语法正常" \
+            || { echo "✗ sinan_tuning.py 语法错误！"; FAIL=1; }
+
+          # 6. 子模块配置必须为绝对 URL
+          if grep -q '\.\./\.\./commaai' .gitmodules 2>/dev/null; then
+            echo "✗ .gitmodules 出现相对路径（设备装不上）！"; FAIL=1
+          else
+            echo "✓ .gitmodules 使用绝对 URL"
+          fi
+
+          if [ "$FAIL" -eq 0 ]; then
+            echo "VALIDATION=pass" >> $GITHUB_OUTPUT
+            echo "=== 校验全部通过 ==="
+          else
+            echo "VALIDATION=fail" >> $GITHUB_OUTPUT
+            echo "=== 校验失败，将不发布 ==="
+          fi
+
+      - name: Push to SINAN (发布给设备)
+        if: steps.merge.outputs.MERGE_STATUS == 'success' && (steps.validate.outputs.VALIDATION == 'pass' || github.event.inputs.skip_validation == 'true')
+        run: |
+          git push origin SINAN
+          echo "✓ 已推送到 SINAN，设备将自动更新"
+
+      - name: Auto-revert on validation failure
+        if: steps.merge.outputs.MERGE_STATUS == 'success' && steps.validate.outputs.VALIDATION == 'fail'
+        run: |
+          git reset --hard origin/SINAN
+          echo "已回滚，SINAN 保持不变"
+
+      - name: Create issue on failure
+        if: failure() || steps.merge.outputs.MERGE_STATUS == 'conflict' || steps.validate.outputs.VALIDATION == 'fail'
         uses: actions/github-script@v7
         with:
           script: |
-            github.rest.issues.create({
+            const status = '${{ steps.merge.outputs.MERGE_STATUS }}';
+            const validation = '${{ steps.validate.outputs.VALIDATION }}';
+            let title, body;
+            if (status === 'conflict') {
+              title = '⚠️ 官方同步冲突：SINAN 分支需要手动处理';
+              body = '官方 commaai/openpilot:master 与 SINAN 分支发生合并冲突，本次同步已中止，SINAN 未被修改。\n\n需要人工解决冲突后再同步。';
+            } else if (validation === 'fail') {
+              title = '⚠️ 同步后校验失败：Z6 iDD 适配可能被破坏';
+              body = '官方更新已合并，但完整性校验未通过，为保护用户设备，本次**未发布**。\n\n请检查校验日志，确认 Z6 iDD 适配代码是否被官方改动影响。';
+            } else {
+              title = '⚠️ 同步工作流执行失败';
+              body = '自动同步流程出现异常，请查看 Actions 运行日志。';
+            }
+            await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: 'Upstream sync failed for SINAN',
-              body: '上游 commaai/openpilot:master 与 SINAN 分支发生合并冲突，请手动处理。',
+              title: title,
+              body: body,
               labels: ['upstream-sync']
             });
