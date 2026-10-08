@@ -1,120 +1,91 @@
 <div align="center" style="text-align: center;">
 
-<h1>openpilot</h1>
+<h1>SINAN 智驾系统</h1>
 
 <p>
-  <b>openpilot is an operating system for robotics.</b>
+  <b>为长安欧尚 Z6 iDD 深度定制的驾驶辅助系统</b>
   <br>
-  Currently, it upgrades the driver assistance system in 300+ supported cars.
+  基于 openpilot（MIT License）构建，开箱即用，上车自动识别车型。
 </p>
 
 <h3>
-  <a href="https://docs.comma.ai">Docs</a>
-  <span> · </span>
-  <a href="https://docs.comma.ai/contributing/roadmap/">Roadmap</a>
-  <span> · </span>
-  <a href="https://github.com/commaai/openpilot/blob/master/docs/CONTRIBUTING.md">Contribute</a>
-  <span> · </span>
-  <a href="https://discord.comma.ai">Community</a>
-  <span> · </span>
-  <a href="https://comma.ai/shop">Try it on a comma four</a>
+  <a href="https://sinan-z6.github.io">官网 / 安装教程</a> ·
+  <a href="#-安装">安装地址</a> ·
+  <a href="#-功能特性">功能特性</a> ·
+  <a href="#-常见问题">常见问题</a> ·
+  <a href="#-许可">许可</a>
 </h3>
-
-Quick start: `bash <(curl -fsSL openpilot.comma.ai)`
-
-[![openpilot tests](https://github.com/commaai/openpilot/actions/workflows/tests.yaml/badge.svg)](https://github.com/commaai/openpilot/actions/workflows/tests.yaml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![X Follow](https://img.shields.io/twitter/follow/comma_ai)](https://x.com/comma_ai)
-[![Discord](https://img.shields.io/discord/469524606043160576)](https://discord.comma.ai)
 
 </div>
 
-<table>
-  <tr>
-    <td><a href="https://youtu.be/NmBfgOanCyk" title="Video By Greer Viau"><img src="https://github.com/commaai/openpilot/assets/8762862/2f7112ae-f748-4f39-b617-fabd689c3772"></a></td>
-    <td><a href="https://youtu.be/VHKyqZ7t8Gw" title="Video By Logan LeGrand"><img src="https://github.com/commaai/openpilot/assets/8762862/92351544-2833-40d7-9e0b-7ef7ae37ec4c"></a></td>
-    <td><a href="https://youtu.be/SUIZYzxtMQs" title="A drive to Taco Bell"><img src="https://github.com/commaai/openpilot/assets/8762862/05ceefc5-2628-439c-a9b2-89ce77dc6f63"></a></td>
-  </tr>
-</table>
+---
 
+## 📲 安装
 
-Using openpilot in a car
-------
+在 comma 设备的 **Settings → Software → Custom Software** 中输入：
 
-To use openpilot in a car, you need four things:
-1. **Supported Device:** a comma four, available at [comma.ai/shop/comma-four](https://www.comma.ai/shop/comma-four).
-2. **Software:** The setup procedure for the comma four allows users to enter a URL for custom software. Use the URL `openpilot.comma.ai` to install the release version.
-3. **Supported Car:** Ensure that you have one of [the 300+ supported cars](docs/CARS.md).
-4. **Car Harness:** You will also need a [car harness](https://comma.ai/shop/car-harness) to connect your comma four to your car.
+```
+installer.comma.ai/SiNan-Z6/openpilot
+```
 
-We have detailed instructions for [how to install the harness and device in a car](https://comma.ai/setup). Note that it's possible to run openpilot on [other hardware](https://blog.comma.ai/self-driving-car-for-free/), although it's not plug-and-play.
+- 无需添加分支后缀，默认即为 Z6 iDD 适配版
+- 无需手动选择车型，开机自动锁定 `CHANGAN_Z6_IDD`
+- 首次安装约需下载 1.8GB 源码，请保持网络稳定
 
+> 详细图文教程见官网：**https://sinan-z6.github.io**
 
-### Branches
+## 🚗 适配车型
 
-Running `master` and other branches directly is supported, but it's recommended to run one of the following prebuilt branches:
+**长安欧尚 Z6 iDD**（插电混动）
 
-| comma four branch      | comma 3X branch        | URL                                    | description                                                                         |
-|------------------------|------------------------|----------------------------------------|-------------------------------------------------------------------------------------|
-| `release-mici`         | `release-tizi`         | openpilot.comma.ai                     | This is openpilot's release branch.                                                 |
-| `release-mici-staging` | `release-tizi-staging` | openpilot-test.comma.ai                | This is the staging branch for releases. Use it to get new releases slightly early. |
-| `nightly`              | `nightly`              | openpilot-nightly.comma.ai             | This is the bleeding edge development branch. Do not expect this to be stable.      |
-| `nightly-dev`          | `nightly-dev`          | installer.comma.ai/commaai/nightly-dev | Same as nightly, but includes experimental development features for some cars.      |
+| 项目 | 说明 |
+|---|---|
+| 车型指纹 | `CHANGAN_Z6_IDD`（`launch_env.sh` 固定，跳过识别流程） |
+| 安全模型 | `changan`（`SAFETY_CHANGAN`，含 CRC 校验与滚动计数器） |
+| 横向控制 | 角度控制（直接写入 EPS 转角指令） |
+| 纵向控制 | openpilot 全速域纵向控制，支持 Stop-and-Go |
+| 整备质量 | 1760 kg（+136 kg 标准载荷） |
+| 轴距 / 转向比 | 2.795 m / 14.5 |
+| 盲区监测 | 启用（数据来自原车 BSM） |
+| 驾驶员监控 | 自动关闭（本车型无内置 DMS 摄像头） |
 
-For [chestnut](https://comma.ai/shop/chestnut), use the following installer URLs:
+同时保留 `CHANGAN_Z6`（燃油版）指纹定义，便于后续扩展。
 
-| branch                       | URL                                                        | description                                                                         |
-|------------------------------|------------------------------------------------------------|-------------------------------------------------------------------------------------|
-| `release-chestnut`           | installer.comma.ai/commaai/release-chestnut                | This is openpilot's release branch.                                                 |
-| `release-chestnut-staging`   | installer.comma.ai/commaai/release-chestnut-staging        | This is the staging branch for releases. Use it to get new releases slightly early. |
-| `nightly-chestnut`           | installer.comma.ai/commaai/nightly-chestnut                | This is the bleeding edge development branch. Do not expect this to be stable.      |
-| `nightly-chestnut-dev`       | installer.comma.ai/commaai/nightly-chestnut-dev            | Same as nightly, but includes experimental development features for some cars.      |
+## ✨ 功能特性
 
-To start developing openpilot
-------
+- **自动车型识别**：固定指纹 + 完整 changan 车型端口，上电即用
+- **L2 级辅助驾驶**：车道居中 + 全速域 ACC + 自动跟停起步
+- **panda 安全模型**：所有发送帧逐帧校验（CRC-8/J1850 + 4-bit 滚动计数），超差即阻断
+- **SINAN 界面**：开机向导 / 设置 / 提示 / 12 种语言翻译全面 SINAN 化
+- **自动同步上游**：CI 工作流自动合并官方 openpilot 更新，合并后自动校验 Z6 iDD 适配完整性，校验通过才发布
 
-openpilot is developed by [comma](https://comma.ai/) and by users like you. We welcome both pull requests and issues on [GitHub](http://github.com/commaai/openpilot).
+## ❓ 常见问题
 
-* Join the [community Discord](https://discord.comma.ai)
-* Check out [the contributing docs](docs/CONTRIBUTING.md)
-* Check out the [openpilot tools](openpilot/tools/)
-* Code documentation lives at https://docs.comma.ai
-* Information about running openpilot lives on the [community wiki](https://github.com/commaai/openpilot/wiki)
+**Q：安装地址输入后没反应？**
+确认拼写区分大小写：`SiNan-Z6/openpilot`；确认设备已联网。
 
-Want to get paid to work on openpilot? [comma is hiring](https://comma.ai/jobs#open-positions) and offers lots of [bounties](https://comma.ai/bounties) for external contributors.
+**Q：怎么确认装的是 SINAN 版？**
+`设置 → 设备 → 关于`，版本信息显示 **SINAN**；车型指纹应为 `CHANGAN_Z6_IDD`。
 
-Safety and Testing
-----
+**Q：官方 openpilot 更新后会失效吗？**
+不会。同步工作流在每次合并后校验车型适配（指纹、安全模型、平台注册等），校验不通过不会发布。
 
-* openpilot observes [ISO26262](https://en.wikipedia.org/wiki/ISO_26262) guidelines, see [SAFETY.md](docs/SAFETY.md) for more details.
-* openpilot has software-in-the-loop [tests](.github/workflows/tests.yaml) that run on every commit.
-* The code enforcing the safety model lives in panda and is written in C, see [code rigor](https://github.com/commaai/panda#code-rigor) for more details.
-* panda has software-in-the-loop [safety tests](https://github.com/commaai/panda/tree/master/tests/safety).
-* Internally, we have a hardware-in-the-loop Jenkins test suite that builds and unit tests the various processes.
-* panda has additional hardware-in-the-loop [tests](https://github.com/commaai/panda/blob/master/Jenkinsfile).
-* We run the latest openpilot in a testing closet containing 10 comma devices continuously replaying routes.
+**Q：首次上路注意什么？**
+横纵向参数为保守出厂值，请在空旷路段低速验证转向与加减速响应，异常时立即接管。
 
-<details>
-<summary>MIT Licensed</summary>
+更多问题见 [官网 FAQ](https://sinan-z6.github.io#faq)。
 
-openpilot is released under the MIT license. Some parts of the software are released under other licenses as specified.
+## 📁 仓库结构
 
-Any user of this software shall indemnify and hold harmless Comma.ai, Inc. and its directors, officers, employees, agents, stockholders, affiliates, subcontractors and customers from and against all allegations, claims, actions, suits, demands, damages, liabilities, obligations, losses, settlements, judgments, costs and expenses (including without limitation attorneys’ fees and costs) which arise out of, relate to or result from any use of this software by user.
+| 路径 | 内容 |
+|---|---|
+| `openpilot/` | 主系统（selfdrive / system / tools） |
+| `opendbc_repo` | 车型适配子模块 → [SiNan-Z6/opendbc](https://github.com/SiNan-Z6/opendbc)（`opendbc/car/changan/` + `opendbc/safety/modes/changan.h`） |
+| `panda` | CAN 通信固件（上游 commaai/panda，编译时自动引入 changan 安全模型） |
 
-**THIS IS ALPHA QUALITY SOFTWARE FOR RESEARCH PURPOSES ONLY. THIS IS NOT A PRODUCT.
-YOU ARE RESPONSIBLE FOR COMPLYING WITH LOCAL LAWS AND REGULATIONS.
-NO WARRANTY EXPRESSED OR IMPLIED.**
-</details>
+## 📜 许可
 
-<details>
-<summary>User Data and comma Account</summary>
+本项目基于 [openpilot](https://github.com/commaai/openpilot)（MIT License）构建，保留上游原始版权声明与许可文本。
+本项目定制部分（长安欧尚 Z6 iDD 车型适配、SINAN 品牌标识）版权归本仓库所有。
 
-By default, openpilot uploads driving data to our servers. You can also access your data through [comma connect](https://connect.comma.ai/). We use your data to train better models and improve openpilot for everyone.
-
-openpilot is open source software, and users can disable data collection if they wish.
-
-openpilot logs the road-facing cameras, CAN, GPS, IMU, magnetometer, thermal sensors, crashes, and operating system logs.
-The driver-facing camera and microphone are only logged if you explicitly opt-in in settings.
-
-By using openpilot, you agree to [our Privacy Policy](https://comma.ai/privacy). You understand that use of this software or its related services will generate certain types of user data, which may be logged and stored at the sole discretion of comma. By accepting this agreement, you grant an irrevocable, perpetual, worldwide right to comma for the use of this data.
-</details>
+**免责声明**：驾驶辅助系统不能替代驾驶员，使用时请始终保持注意力集中、手握方向盘。本系统按"现状"提供，使用风险由用户自行承担。
