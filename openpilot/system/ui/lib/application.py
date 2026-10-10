@@ -97,22 +97,22 @@ NOTO_FONTS = {
   "ja": "NotoSansCJKjp-Regular.otf",
   "ko": "NotoSansCJKkr-Regular.otf",
   "th": "NotoSansThai-Regular.ttf",
-  "zh-CHS": "NotoSansCJKsc-Regular.otf",
-  "zh-CHT": "NotoSansCJKtc-Regular.otf",
+  "zh-CHS": "AlibabaPuHuiTi-2-Regular.ttf",
+  "zh-CHT": "AlibabaPuHuiTi-2-Regular.ttf",
 }
 
 
 class FontWeight(StrEnum):
-  NORMAL = "Inter-Regular.ttf" if BIG_UI else "Inter-Medium.ttf"
-  MEDIUM = "Inter-Medium.ttf"
-  BOLD = "Inter-Bold.ttf"
-  SEMI_BOLD = "Inter-SemiBold.ttf"
+  NORMAL = "AlibabaPuHuiTi-2-Regular.ttf"
+  MEDIUM = "AlibabaPuHuiTi-2-Regular.ttf"
+  BOLD = "AlibabaPuHuiTi-2-Bold.ttf"
+  SEMI_BOLD = "AlibabaPuHuiTi-2-Bold.ttf"
   UNIFONT = "unifont.otf"
 
   # Small UI fonts
-  DISPLAY_REGULAR = "Inter-Regular.ttf"
-  ROMAN = "Inter-Regular.ttf"
-  DISPLAY = "Inter-Bold.ttf"
+  DISPLAY_REGULAR = "AlibabaPuHuiTi-2-Regular.ttf"
+  ROMAN = "AlibabaPuHuiTi-2-Regular.ttf"
+  DISPLAY = "AlibabaPuHuiTi-2-Bold.ttf"
 
 
 class TextAlignment(IntEnum):

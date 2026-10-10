@@ -36,10 +36,10 @@ extern const uint8_t str_continue[] asm("_binary_selfdrive_ui_installer_continue
 extern const uint8_t str_continue_end[] asm("_binary_selfdrive_ui_installer_continue_openpilot_sh_end");
 extern const uint8_t inter_ttf[] asm("_binary_selfdrive_ui_installer_inter_ascii_ttf_start");
 extern const uint8_t inter_ttf_end[] asm("_binary_selfdrive_ui_installer_inter_ascii_ttf_end");
-extern const uint8_t inter_light_ttf[] asm("_binary_selfdrive_assets_fonts_Inter_Light_ttf_start");
-extern const uint8_t inter_light_ttf_end[] asm("_binary_selfdrive_assets_fonts_Inter_Light_ttf_end");
-extern const uint8_t inter_bold_ttf[] asm("_binary_selfdrive_assets_fonts_Inter_Bold_ttf_start");
-extern const uint8_t inter_bold_ttf_end[] asm("_binary_selfdrive_assets_fonts_Inter_Bold_ttf_end");
+extern const uint8_t puhuiti_regular_ttf[] asm("_binary_selfdrive_assets_fonts_AlibabaPuHuiTi_2_Regular_ttf_start");
+extern const uint8_t puhuiti_regular_ttf_end[] asm("_binary_selfdrive_assets_fonts_AlibabaPuHuiTi_2_Regular_ttf_end");
+extern const uint8_t puhuiti_bold_ttf[] asm("_binary_selfdrive_assets_fonts_AlibabaPuHuiTi_2_Bold_ttf_start");
+extern const uint8_t puhuiti_bold_ttf_end[] asm("_binary_selfdrive_assets_fonts_AlibabaPuHuiTi_2_Bold_ttf_end");
 
 Font font_inter;
 Font font_roman;
@@ -304,8 +304,8 @@ int main(int argc, char *argv[]) {
   }
 
   font_inter = LoadFontFromMemory(".ttf", inter_ttf, inter_ttf_end - inter_ttf, FONT_SIZE, NULL, 0);
-  font_roman = LoadFontFromMemory(".ttf", inter_light_ttf, inter_light_ttf_end - inter_light_ttf, FONT_SIZE, NULL, 0);
-  font_display = LoadFontFromMemory(".ttf", inter_bold_ttf, inter_bold_ttf_end - inter_bold_ttf, FONT_SIZE, NULL, 0);
+  font_roman = LoadFontFromMemory(".ttf", puhuiti_regular_ttf, puhuiti_regular_ttf_end - puhuiti_regular_ttf, FONT_SIZE, NULL, 0);
+  font_display = LoadFontFromMemory(".ttf", puhuiti_bold_ttf, puhuiti_bold_ttf_end - puhuiti_bold_ttf, FONT_SIZE, NULL, 0);
   SetTextureFilter(font_inter.texture, TEXTURE_FILTER_BILINEAR);
   SetTextureFilter(font_roman.texture, TEXTURE_FILTER_BILINEAR);
   SetTextureFilter(font_display.texture, TEXTURE_FILTER_BILINEAR);

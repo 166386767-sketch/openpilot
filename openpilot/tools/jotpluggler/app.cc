@@ -263,11 +263,11 @@ void configure_style() {
     }
     return font;
   };
-  if (ImFont *font = add_font_with_icons(fonts_dir / "Inter-Regular.ttf", 16.0f); font != nullptr) {
+  if (ImFont *font = add_font_with_icons(fonts_dir / "AlibabaPuHuiTi-2-Regular.ttf", 16.0f); font != nullptr) {
     g_ui_font = font;
     io.FontDefault = font;
   }
-  g_ui_bold_font = add_font_with_icons(fonts_dir / "Inter-SemiBold.ttf", 16.75f);
+  g_ui_bold_font = add_font_with_icons(fonts_dir / "AlibabaPuHuiTi-2-Bold.ttf", 16.75f);
   if (g_ui_font == nullptr) {
     if (ImFont *font = add_font_with_icons(fonts_dir / "JetBrainsMono-Medium.ttf", 15.75f); font != nullptr) {
       g_mono_font = font;

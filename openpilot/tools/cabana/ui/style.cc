@@ -45,10 +45,10 @@ ImFont *addFont(const fs::path &path, float size) {
 void loadFonts() {
   ImGuiIO &io = ImGui::GetIO();
   const fs::path fonts = fs::path(CABANA_FONTS_DIR);
-  g_ui_font = addFont(fonts / "Inter-Regular.ttf", 16.0f);
-  g_bold_font = addFont(fonts / "Inter-SemiBold.ttf", 16.0f);
+  g_ui_font = addFont(fonts / "AlibabaPuHuiTi-2-Regular.ttf", 16.0f);
+  g_bold_font = addFont(fonts / "AlibabaPuHuiTi-2-Bold.ttf", 16.0f);
   g_mono_font = addFont(fonts / "JetBrainsMono-Medium.ttf", 15.0f);
-  g_large_font = addFont(fonts / "Inter-Bold.ttf", 50.0f);
+  g_large_font = addFont(fonts / "AlibabaPuHuiTi-2-Bold.ttf", 50.0f);
   if (g_ui_font != nullptr) io.FontDefault = g_ui_font;
   if (g_bold_font == nullptr) g_bold_font = g_ui_font;
   if (g_mono_font == nullptr) g_mono_font = g_ui_font;
